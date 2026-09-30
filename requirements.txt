@@ -1,0 +1,16 @@
+numpy
+matplotlib
+jupyter
+ipykernel
+nbformat
+
+# Notebooks 1-9 (and Part A of 10-11) need only the packages above.
+# Production sections of notebooks 10 and 11 (tested with these versions;
+# trl's API changes often, e.g. PPOTrainer was removed in trl 1.x):
+torch>=2.14
+transformers>=5.17
+trl>=1.14
+peft>=0.21
+datasets>=5.0
+accelerate>=1.15
+gymnasium>=1.3
