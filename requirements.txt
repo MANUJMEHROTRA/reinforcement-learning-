@@ -6,7 +6,9 @@ nbformat
 
 # Notebooks 1-9 (and Part A of 10-11) need only the packages above.
 # Production sections of notebooks 10 and 11 (tested with these versions;
-# trl's API changes often, e.g. PPOTrainer was removed in trl 1.x):
+# trl's API changes often, e.g. PPOTrainer was removed in trl 1.x).
+# Part III: notebook 13 needs only numpy/matplotlib; 14, 15 and 17 need torch (CPU is enough);
+# 16 needs the full stack (trl's GRPOTrainer `tools=` / `environment_factory=` support, trl >= 1.14):
 torch>=2.14
 transformers>=5.17
 trl>=1.14

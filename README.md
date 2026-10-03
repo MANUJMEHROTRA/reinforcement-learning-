@@ -42,6 +42,23 @@ The notebooks are organized in a progression from basic RL theory to applied RL 
 12. [12_reasoning_slm_grpo.ipynb](notebooks/12_reasoning_slm_grpo.ipynb)  
    A compact demonstration of taking a small non-reasoning SLM and improving it with GRPO and a custom PyTorch training loop.
 
+### Part III — Agentic RL
+
+13. [13_agentic_rl_foundations.ipynb](notebooks/13_agentic_rl_foundations.ipynb)  
+   What an LLM agent is, a topic map of agentic RL, the history from prompting to imitation to RL, and the POMDP formalism. Experiments: behavior cloning vs DAgger vs RL as the horizon grows, why RL needs an SFT prior, and curricula.
+
+14. [14_agent_loop_multiturn_rl.ipynb](notebooks/14_agent_loop_multiturn_rl.ipynb)  
+   The agent loop as an RL environment: a text tool environment, a batched multi-turn rollout engine, SFT warm start and multi-turn GRPO with observation masking. Ablations: training without the mask, and tool-call costs.
+
+15. [15_credit_assignment_multiturn.ipynb](notebooks/15_credit_assignment_multiturn.ipynb)  
+   Credit assignment across turns: trajectory-level GRPO vs step-level grouping (GiGPO) vs a turn-level critic with GAE, discounting, and process rewards (potential-based shaping vs a reward that gets hacked).
+
+16. [16_agentic_rl_slm_tools.ipynb](notebooks/16_agentic_rl_slm_tools.ipynb)  
+   Training a real tool-using agent: Qwen2.5-0.5B-Instruct + a calculator, with multi-turn GRPO in `trl` (`tools=`, `environment_factory=`) and from scratch in PyTorch.
+
+17. [17_agentic_rl_at_scale.ipynb](notebooks/17_agentic_rl_at_scale.ipynb)  
+   Environment hacking (an agent that edits the tests) and defenses, async rollouts and off-policy corrections (truncated IS, decoupled PPO, sequence-length effects), non-verifiable rewards, instabilities, frameworks, benchmarks, and a recipe for agentic RL.
+
 ## How the RL evolves
 
 This course starts from the fundamentals:
@@ -60,6 +77,8 @@ It then moves into modern policy optimization:
 - group-based objective methods such as RLOO and GRPO
 
 The final notebooks shift from classic RL to reasoning-focused model optimization, where the reward is tied to correctness, preference quality, or verifier-based signals. The progression is meant to show the conceptual bridge from RL theory to real-world post-training for language models.
+
+Part III takes the next step, from models that *reason* to agents that *act*. The model calls tools and reads their output over many turns, and is trained from outcome rewards. It covers why RL (rather than imitation) is the method of choice for agents, multi-turn rollouts with observation masking, credit assignment across turns, a real tool-using SLM, and the reward-hacking and systems issues that appear at scale.
 
 ## Practical focus
 
