@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The spring inside KL divergence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F1F3F6;
+  --surface: #FFFFFF;
+  --ink: #17223B;
+  --muted: #5D667A;
+  --rule: #D3D9E3;
+  --spring: #2B59C3;
+  --kl: #9C2C77;
+  --spring-soft: rgba(43, 89, 195, 0.10);
+  --kl-soft: rgba(156, 44, 119, 0.12);
+  --p-fill: rgba(23, 34, 59, 0.09);
+  --row-hl: #E6ECF7;
+  --serif: "Literata", Georgia, "Times New Roman", serif;
+  --sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #10151F;
+    --surface: #171E2B;
+    --ink: #E4E9F2;
+    --muted: #98A2B6;
+    --rule: #2A3446;
+    --spring: #86A6FF;
+    --kl: #E583BF;
+    --spring-soft: rgba(134, 166, 255, 0.12);
+    --kl-soft: rgba(229, 131, 191, 0.14);
+    --p-fill: rgba(228, 233, 242, 0.11);
+    --row-hl: #222C3F;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #10151F;
+  --surface: #171E2B;
+  --ink: #E4E9F2;
+  --muted: #98A2B6;
+  --rule: #2A3446;
+  --spring: #86A6FF;
+  --kl: #E583BF;
+  --spring-soft: rgba(134, 166, 255, 0.12);
+  --kl-soft: rgba(229, 131, 191, 0.14);
+  --p-fill: rgba(228, 233, 242, 0.11);
+  --row-hl: #222C3F;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 2.5rem 1.25rem 3rem; }
+header { max-width: 46rem; margin-bottom: 2rem; }
+h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.75rem;
+}
+.lede { font-size: 1.08rem; color: var(--muted); margin: 0; max-width: 40rem; }
+h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.35rem;
+  margin: 0 0 0.75rem;
+}
+.math { font-family: var(--serif); font-style: italic; white-space: nowrap; }
+.math .up { font-style: normal; }
+
+/* Equation bridge */
+.bridge {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 1rem;
+}
+.eq {
+  padding: 0.9rem 1.1rem;
+  font-family: var(--serif);
+  font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+  font-style: italic;
+  display: flex; flex-direction: column; gap: 0.15rem;
+}
+.eq small { font-family: var(--sans); font-style: normal; font-size: 0.85rem; color: var(--muted); }
+.eq.s { border-left: 4px solid var(--spring); background: var(--spring-soft); }
+.eq.k { border-right: 4px solid var(--kl); background: var(--kl-soft); text-align: right; }
+.bridge-mid {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: 0 1.1rem; text-align: center; font-size: 0.9rem; color: var(--muted);
+  border-top: 1px dashed var(--rule); border-bottom: 1px dashed var(--rule);
+}
+.bridge-mid .math { color: var(--ink); font-size: 1.15rem; }
+
+/* Panels */
+.stage { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; padding: 0.8rem 1rem 0.2rem; gap: 1rem; }
+.panel-head h3 { font-family: var(--serif); font-weight: 600; font-size: 1.1rem; margin: 0; }
+.panel.s .panel-head h3 { color: var(--spring); }
+.panel.k .panel-head h3 { color: var(--kl); }
+.panel-head .live { font-size: 0.9rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.panel canvas { display: block; width: 100%; height: 360px; touch-action: pan-y; cursor: ew-resize; }
+.panel p.cap { margin: 0; padding: 0 1rem 0.9rem; font-size: 0.88rem; color: var(--muted); }
+
+/* Lower grid */
+.lower { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 1rem; margin-top: 1rem; }
+.box { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 1.1rem; }
+.ctrl { margin-bottom: 0.9rem; }
+.ctrl label { display: flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 0.2rem; gap: 1rem; }
+.ctrl label output { font-variant-numeric: tabular-nums; color: var(--muted); }
+.ctrl .hint { font-size: 0.8rem; color: var(--muted); }
+input[type=range] { width: 100%; accent-color: var(--ink); }
+.btns { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.4rem 0 0.9rem; }
+button {
+  font: inherit; font-size: 0.9rem;
+  color: var(--ink); background: transparent;
+  border: 1px solid var(--rule); border-radius: 999px;
+  padding: 0.35rem 0.85rem; cursor: pointer;
+}
+button:hover { border-color: var(--ink); }
+button.primary { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+button:focus-visible, input:focus-visible, tr:focus-visible { outline: 2px solid var(--spring); outline-offset: 2px; }
+.presets-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.3rem; }
+.readouts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; border-top: 1px solid var(--rule); padding-top: 0.8rem; font-size: 0.9rem; }
+.readouts div span { display: block; color: var(--muted); font-size: 0.8rem; }
+.readouts b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.regime { grid-column: 1 / -1; }
+
+/* Analogy table */
+table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+caption { text-align: left; color: var(--muted); font-size: 0.88rem; padding-bottom: 0.6rem; }
+th { text-align: left; font-family: var(--serif); font-weight: 600; font-size: 1rem; padding: 0.35rem 0.6rem; border-bottom: 2px solid var(--rule); }
+th.s { color: var(--spring); } th.k { color: var(--kl); }
+td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tbody tr { cursor: pointer; transition: background-color 0.12s; }
+tbody tr:hover, tbody tr.on { background: var(--row-hl); }
+tbody tr.pinned td:first-child { box-shadow: inset 3px 0 0 var(--ink); }
+td .sub { display: block; color: var(--muted); font-size: 0.82rem; }
+
+/* Trace */
+.trace { margin-top: 1rem; }
+.trace canvas { display: block; width: 100%; height: 220px; }
+.trace .head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+.trace .head p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+
+/* Derivation */
+.deriv { margin-top: 2.5rem; }
+.deriv-grid { display: grid; grid-template-columns: 9rem 1fr 1fr; border-top: 1px solid var(--rule); }
+.deriv-grid > div { padding: 0.75rem 0.8rem; border-bottom: 1px solid var(--rule); }
+.deriv-grid .step { color: var(--muted); font-size: 0.88rem; padding-left: 0; }
+.deriv-grid .colhead { font-family: var(--serif); font-weight: 600; }
+.deriv-grid .colhead.s { color: var(--spring); } .deriv-grid .colhead.k { color: var(--kl); }
+.deriv-grid .cell { font-size: 0.95rem; }
+.deriv-grid .cell .math { font-size: 1.05rem; white-space: normal; }
+.notes { margin-top: 2rem; max-width: 46rem; color: var(--muted); font-size: 0.92rem; }
+.notes p { margin: 0 0 0.6rem; }
+
+@media (max-width: 860px) {
+  .stage, .lower { grid-template-columns: 1fr; }
+  .panel canvas { height: 320px; }
+  .bridge { grid-template-columns: 1fr; }
+  .eq.k { text-align: left; border-right: none; border-left: 4px solid var(--kl); }
+  .bridge-mid { border: none; padding: 0.5rem 0; flex-direction: row; gap: 0.5rem; justify-content: flex-start; }
+  .deriv-grid { grid-template-columns: 1fr 1fr; }
+  .deriv-grid .step { grid-column: 1 / -1; padding-bottom: 0; border-bottom: none; }
+  .deriv-grid .blank { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  tbody tr { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>The spring inside KL divergence</h1>
+  <p class="lede">A mass on a spring and a Gaussian sliding away from its twin obey the same equation. Drag either one sideways, let go, and watch both move in lockstep.</p>
+</header>
+
+<div class="bridge" aria-label="The two equations of motion">
+  <div class="eq s"><small>Mass on a spring</small>m ẍ + γ ẋ + k x = 0</div>
+  <div class="bridge-mid">identical when<span class="math">k = F = 1/σ²</span></div>
+  <div class="eq k"><small>Parameter θ with KL as its energy</small>m δ̈ + γ δ̇ + F δ = 0</div>
+</div>
+
+<section class="stage">
+  <div class="panel s">
+    <div class="panel-head"><h3>Mass on a spring</h3><span class="live" id="liveU">U = 0.000</span></div>
+    <canvas id="cvSpring" role="img" aria-label="A block on a spring moving horizontally, with a parabolic energy bowl below it"></canvas>
+    <p class="cap">Top: the block and its forces. Bottom: the energy bowl U(x) = ½kx², with the ball marking where the block is now.</p>
+  </div>
+  <div class="panel k">
+    <div class="panel-head"><h3>Two Gaussians, one moving</h3><span class="live" id="liveKL">KL = 0.000 nats</span></div>
+    <canvas id="cvKL" role="img" aria-label="A fixed Gaussian and a moving Gaussian, with the KL divergence bowl below"></canvas>
+    <p class="cap">Top: fixed p<sub>θ₀</sub> (grey) and moving p<sub>θ</sub>. Bottom: KL(p<sub>θ₀</sub>‖p<sub>θ</sub>) = δ²/2σ², the same parabola.</p>
+  </div>
+</section>
+
+<section class="lower">
+  <div class="box">
+    <h2>Controls</h2>
+    <div class="ctrl">
+      <label for="sigma">Gaussian width σ <output id="oSigma">1.00</output></label>
+      <input id="sigma" type="range" min="0.5" max="2" step="0.05" value="1">
+      <div class="hint">Sets the stiffness on both sides: k = F = 1/σ². Narrow Gaussians make a stiff spring.</div>
+    </div>
+    <div class="ctrl">
+      <label for="mass">Mass m <output id="oMass">1.00</output></label>
+      <input id="mass" type="range" min="0.2" max="3" step="0.05" value="1">
+    </div>
+    <div class="ctrl">
+      <label for="damp">Damping γ <output id="oDamp">0.30</output></label>
+      <input id="damp" type="range" min="0" max="7" step="0.05" value="0.3">
+    </div>
+    <div class="ctrl">
+      <label for="offset">Starting offset <output id="oOffset">2.00</output></label>
+      <input id="offset" type="range" min="-2.8" max="2.8" step="0.05" value="2">
+    </div>
+    <div class="btns">
+      <button id="play" class="primary">Pause</button>
+      <button id="release">Release again</button>
+    </div>
+    <div class="presets-label">Presets</div>
+    <div class="btns" id="presets">
+      <button data-p="undamped">No friction</button>
+      <button data-p="under">Light damping</button>
+      <button data-p="critical">Critical damping</button>
+      <button data-p="gd">Plain gradient descent</button>
+    </div>
+    <div class="readouts">
+      <div><span>Stiffness k = F</span><b id="rK">1.000</b></div>
+      <div><span>Natural frequency ω₀</span><b id="rW">1.000</b></div>
+      <div><span>Damping ratio ζ</span><b id="rZ">0.150</b></div>
+      <div><span>Period</span><b id="rT">6.28</b></div>
+      <div class="regime"><span>Regime</span><b id="rR">Underdamped</b></div>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>The analogy</h2>
+    <table>
+      <caption>Point at a row to light up the matching pieces on both sides. Click to keep it lit.</caption>
+      <thead><tr><th class="s">Spring</th><th class="k">KL divergence</th></tr></thead>
+      <tbody id="analogy">
+        <tr data-hl="displacement" tabindex="0"><td>Displacement x</td><td>Parameter offset δ = θ − θ₀</td></tr>
+        <tr data-hl="equilibrium" tabindex="0"><td>Rest position x = 0</td><td>θ = θ₀<span class="sub">The two distributions coincide and KL = 0</span></td></tr>
+        <tr data-hl="potential" tabindex="0"><td>Potential energy ½kx²</td><td>KL(p<sub>θ₀</sub>‖p<sub>θ</sub>) ≈ ½Fδ²<span class="sub">Exact for Gaussian means</span></td></tr>
+        <tr data-hl="stiffness" tabindex="0"><td>Spring constant k</td><td>Fisher information F = 1/σ²<span class="sub">Curvature of the KL bowl at its bottom</span></td></tr>
+        <tr data-hl="force" tabindex="0"><td>Restoring force −kx</td><td>Negative gradient −∇KL = −Fδ</td></tr>
+        <tr data-hl="mass" tabindex="0"><td>Mass m</td><td>Inertia supplied by optimizer momentum</td></tr>
+        <tr data-hl="damping" tabindex="0"><td>Friction γ</td><td>Momentum decay<span class="sub">Very high friction is plain gradient descent</span></td></tr>
+        <tr data-hl="frequency" tabindex="0"><td>ω = √(k/m)</td><td>ω = √(F/m)</td></tr>
+        <tr data-hl="energy" tabindex="0"><td>Total energy ½mv² + ½kx²</td><td>½mδ̇² + KL</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="box trace">
+  <div class="head">
+    <h2>Over time</h2>
+    <p>Last 12 seconds. One curve serves both systems because x(t) and δ(t) are the same function.</p>
+  </div>
+  <canvas id="cvTrace" role="img" aria-label="Displacement over time, and KL divergence with total energy over time"></canvas>
+</section>
+
+<section class="deriv">
+  <h2>Why the equations match</h2>
+  <div class="deriv-grid">
+    <div class="step blank"></div><div class="colhead s">Spring</div><div class="colhead k">KL divergence</div>
+
+    <div class="step">Restoring rule</div>
+    <div class="cell">Hooke’s law: <span class="math">F = −kx</span></div>
+    <div class="cell">The score has zero mean, so <span class="math">∇KL = 0</span> at θ₀; its Hessian there is the Fisher information <span class="math">F</span>.</div>
+
+    <div class="step">Energy bowl</div>
+    <div class="cell"><span class="math">U(x) = ½kx²</span></div>
+    <div class="cell"><span class="math">KL(p<sub>θ₀</sub>‖p<sub>θ₀+δ</sub>) = ½δ<sup>⊤</sup>Fδ + O(δ³)</span>; for Gaussian means it is exactly <span class="math">δ²/2σ²</span>.</div>
+
+    <div class="step">Add inertia and friction</div>
+    <div class="cell"><span class="math">m ẍ = −kx − γẋ</span></div>
+    <div class="cell"><span class="math">m δ̈ = −Fδ − γδ̇</span>, the heavy-ball momentum update in continuous time.</div>
+
+    <div class="step">Solution when ζ &lt; 1</div>
+    <div class="cell"><span class="math">x(t) = A e<sup>−γt/2m</sup> cos(ω<sub>d</sub>t + φ)</span></div>
+    <div class="cell">Same, with <span class="math">ω<sub>d</sub> = √(F/m − γ²/4m²)</span></div>
+  </div>
+
+  <div class="notes">
+    <p>The Gaussian-mean case is exact: KL is a perfect parabola everywhere. For other families the parabola holds only near θ₀. Further out, higher-order terms make the bowl lopsided, much like a spring stretched past the range where Hooke’s law holds. That is also where KL’s asymmetry first shows up.</p>
+    <p>KL divergence has no time in it. The motion appears once θ is given inertia, which is what momentum optimizers do. Plain gradient descent is the heavily overdamped limit, so it slides to the bottom without overshooting.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- parameters & state ----------
+  const el = { sigma: $('sigma'), m: $('mass'), g: $('damp'), A: $('offset') };
+  const P = {};
+  function readParams() {
+    P.sigma = +el.sigma.value; P.m = +el.m.value; P.g = +el.g.value; P.A = +el.A.value;
+    $('oSigma').textContent = P.sigma.toFixed(2);
+    $('oMass').textContent = P.m.toFixed(2);
+    $('oDamp').textContent = P.g.toFixed(2);
+    $('oOffset').textContent = P.A.toFixed(2);
+  }
+  readParams();
+  const kOf = () => 1 / (P.sigma * P.sigma);
+
+  const S = { x: P.A, v: 0, t: 0, running: !reduceMotion, dragging: null, hl: null, pinned: null };
+  let hist = [];
+
+  function accel(x, v) { return -(kOf() * x + P.g * v) / P.m; }
+  function rk4(h) {
+    const x = S.x, v = S.v;
+    const a1 = accel(x, v);
+    const x2 = x + 0.5 * h * v, v2 = v + 0.5 * h * a1, a2 = accel(x2, v2);
+    const x3 = x + 0.5 * h * v2, v3 = v + 0.5 * h * a2, a3 = accel(x3, v3);
+    const x4 = x + h * v3, v4 = v + h * a3, a4 = accel(x4, v4);
+    S.x = x + (h / 6) * (v + 2 * v2 + 2 * v3 + v4);
+    S.v = v + (h / 6) * (a1 + 2 * a2 + 2 * a3 + a4);
+  }
+  const PE = () => 0.5 * kOf() * S.x * S.x;
+  const KE = () => 0.5 * P.m * S.v * S.v;
+
+  function release() {
+    S.x = P.A; S.v = 0; S.t = 0; hist = [];
+    S.running = true; syncPlay();
+  }
+  function syncPlay() { $('play').textContent = S.running ? 'Pause' : 'Play'; }
+
+  // ---------- colors ----------
+  let C = {};
+  function refreshColors() {
+    const cs = getComputedStyle(document.documentElement);
+    ['paper', 'surface', 'ink', 'muted', 'rule', 'spring', 'kl', 'spring-soft', 'kl-soft', 'p-fill']
+      .forEach(n => C[n] = cs.getPropertyValue('--' + n).trim());
+  }
+  refreshColors();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', refreshColors);
+  new MutationObserver(refreshColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ---------- canvas plumbing ----------
+  const canvases = {};
+  function fit(name, c) {
+    const r = c.getBoundingClientRect();
+    const d = window.devicePixelRatio || 1;
+    c.width = Math.max(1, Math.round(r.width * d));
+    c.height = Math.max(1, Math.round(r.height * d));
+    const ctx = c.getContext('2d');
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+    canvases[name] = { c, ctx, W: r.width, H: r.height };
+  }
+  const cvS = $('cvSpring'), cvK = $('cvKL'), cvT = $('cvTrace');
+  const ro = new ResizeObserver(() => { fit('s', cvS); fit('k', cvK); fit('t', cvT); });
+  [cvS, cvK, cvT].forEach(c => ro.observe(c));
+  fit('s', cvS); fit('k', cvK); fit('t', cvT);
+
+  // ---------- highlight helpers ----------
+  const alphaFor = (...keys) => (S.hl === null || keys.includes(S.hl)) ? 1 : 0.18;
+  const boost = (...keys) => (S.hl !== null && keys.includes(S.hl)) ? 1.9 : 1;
+
+  const SANS = '"Atkinson Hyperlegible", system-ui, sans-serif';
+  const SERIF = '"Literata", Georgia, serif';
+
+  function arrow(ctx, x1, y1, x2, y2, col, w) {
+    if (Math.hypot(x2 - x1, y2 - y1) < 3) return;
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = w;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    const ang = Math.atan2(y2 - y1, x2 - x1), hs = 7 + w * 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - hs * Math.cos(ang - 0.42), y2 - hs * Math.sin(ang - 0.42));
+    ctx.lineTo(x2 - hs * Math.cos(ang + 0.42), y2 - hs * Math.sin(ang + 0.42));
+    ctx.closePath(); ctx.fill();
+  }
+  function label(ctx, text, x, y, col, opts = {}) {
+    ctx.font = opts.serif ? `italic ${opts.size || 15}px ${SERIF}` : `${opts.size || 12.5}px ${SANS}`;
+    ctx.fillStyle = col; ctx.textAlign = opts.align || 'center'; ctx.textBaseline = opts.base || 'middle';
+    ctx.fillText(text, x, y);
+  }
+  const geom = (W, H) => ({ s: W * 0.13, cx: W / 2, sysH: H * 0.5 });
+
+  // ---------- shared energy bowl ----------
+  function drawBowl(ctx, W, H, color, title, objX, objY) {
+    const { s, cx } = geom(W, H);
+    const top = H * 0.57, bottom = H - 18, bh = bottom - top, uMax = 3;
+    const yOf = u => bottom - (u / uMax) * bh;
+    const k = kOf();
+
+    // guide from object to ball
+    const bx = cx + S.x * s, by = yOf(PE());
+    ctx.save();
+    ctx.globalAlpha = 0.35 * alphaFor('displacement', 'potential');
+    ctx.setLineDash([3, 4]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(objX, objY); ctx.lineTo(bx, Math.max(by, top)); ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, top - 6, W, bh + 24); ctx.clip();
+
+    // baseline
+    ctx.globalAlpha = 1; ctx.strokeStyle = C.rule; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, bottom); ctx.lineTo(W, bottom); ctx.stroke();
+
+    // curve
+    ctx.globalAlpha = alphaFor('potential', 'stiffness', 'frequency');
+    ctx.strokeStyle = color; ctx.lineWidth = 2 * boost('potential', 'stiffness');
+    ctx.beginPath();
+    for (let px = 0; px <= W; px += 2) {
+      const u = 0.5 * k * ((px - cx) / s) ** 2;
+      const y = yOf(Math.min(u, uMax * 1.5));
+      px === 0 ? ctx.moveTo(px, y) : ctx.lineTo(px, y);
+    }
+    ctx.stroke();
+
+    // total energy line
+    const E = PE() + KE();
+    ctx.globalAlpha = 0.85 * alphaFor('energy', 'damping');
+    ctx.setLineDash([6, 5]); ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2 * boost('energy', 'damping');
+    const ey = yOf(E);
+    ctx.beginPath(); ctx.moveTo(0, ey); ctx.lineTo(W, ey); ctx.stroke();
+    ctx.setLineDash([]);
+    if (ey > top + 8) label(ctx, 'total energy', W - 8, ey - 9, C.muted, { align: 'right' });
+
+    // ball
+    ctx.globalAlpha = alphaFor('mass', 'displacement', 'energy', 'potential');
+    const r = 7 * (S.hl === 'mass' ? 1.4 : 1);
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(bx, Math.max(by, top) - r, r, 0, Math.PI * 2); ctx.fill();
+
+    // title
+    ctx.globalAlpha = alphaFor('potential', 'stiffness');
+    label(ctx, title, 10, top + 6, C.muted, { align: 'left', serif: true, size: 14 });
+    ctx.restore();
+  }
+
+  // ---------- spring panel ----------
+  function drawSpring() {
+    const o = canvases.s; if (!o) return;
+    const { ctx, W, H } = o;
+    ctx.clearRect(0, 0, W, H);
+    const { s, cx, sysH } = geom(W, H);
+    const blk = Math.min(52, W * 0.1);
+    const floorY = sysH * 0.82, cy = floorY - blk / 2;
+    const mx = cx + S.x * s;
+    const wallX = 10;
+
+    // floor
+    ctx.globalAlpha = 1; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, floorY); ctx.lineTo(W, floorY); ctx.stroke();
+
+    // friction hatching (strength ∝ γ)
+    if (P.g > 0) {
+      ctx.globalAlpha = Math.min(1, 0.25 + P.g / 3) * alphaFor('damping');
+      ctx.strokeStyle = C.muted; ctx.lineWidth = 1 * boost('damping');
+      ctx.beginPath();
+      for (let x = 0; x < W; x += 9) { ctx.moveTo(x, floorY + 1); ctx.lineTo(x - 6, floorY + 8); }
+      ctx.stroke();
+      label(ctx, 'friction γ', W - 8, floorY + 18, C.muted, { align: 'right' });
+    }
+
+    // wall
+    ctx.globalAlpha = 1; ctx.fillStyle = C.rule;
+    ctx.fillRect(0, floorY - blk * 1.9, wallX, blk * 1.9);
+
+    // equilibrium line
+    ctx.globalAlpha = alphaFor('equilibrium');
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2 * boost('equilibrium');
+    ctx.beginPath(); ctx.moveTo(cx, floorY - blk * 2.1); ctx.lineTo(cx, floorY + 4); ctx.stroke();
+    ctx.setLineDash([]);
+    label(ctx, 'x = 0', cx, floorY - blk * 2.1 - 9, C.muted);
+
+    // spring coils
+    const x1 = wallX, x2 = mx - blk / 2;
+    ctx.globalAlpha = alphaFor('stiffness', 'frequency', 'potential');
+    ctx.strokeStyle = C.spring; ctx.lineWidth = 2 * boost('stiffness');
+    const coils = 11, lead = 12, amp = 4 + 10 * Math.min(1.4, Math.sqrt(kOf()) * 0.9);
+    ctx.beginPath(); ctx.moveTo(x1, cy); ctx.lineTo(x1 + lead, cy);
+    const L = x2 - x1 - 2 * lead;
+    for (let i = 0; i < coils * 2; i++) {
+      ctx.lineTo(x1 + lead + L * (i + 0.5) / (coils * 2), cy + (i % 2 ? amp : -amp));
+    }
+    ctx.lineTo(x2 - lead, cy); ctx.lineTo(x2, cy); ctx.stroke();
+    label(ctx, 'k', (x1 + x2) / 2, cy - amp - 12, C.spring, { serif: true });
+
+    // block
+    ctx.globalAlpha = alphaFor('mass', 'displacement', 'frequency');
+    ctx.fillStyle = C.ink;
+    const grow = S.hl === 'mass' ? 4 : 0;
+    ctx.fillRect(mx - blk / 2 - grow / 2, floorY - blk - grow, blk + grow, blk + grow);
+    label(ctx, 'm', mx, cy, C.surface, { serif: true, size: 17 });
+
+    // displacement arrow
+    ctx.globalAlpha = alphaFor('displacement');
+    const dy = floorY + 30;
+    arrow(ctx, cx, dy, mx, dy, C.ink, 1.6 * boost('displacement'));
+    if (Math.abs(mx - cx) > 18) label(ctx, 'x', (cx + mx) / 2, dy + 13, C.ink, { serif: true });
+
+    // force arrow
+    ctx.globalAlpha = alphaFor('force');
+    const f = -kOf() * S.x;
+    const fy = floorY - blk - 18;
+    const fl = Math.max(-W * 0.4, Math.min(W * 0.4, f * s * 0.28));
+    arrow(ctx, mx, fy, mx + fl, fy, C.spring, 2.2 * boost('force'));
+    if (Math.abs(fl) > 16) label(ctx, '−kx', mx + fl / 2, fy - 12, C.spring, { serif: true });
+
+    ctx.globalAlpha = 1;
+    drawBowl(ctx, W, H, C.spring, 'U(x) = ½kx²', mx, floorY + 4);
+  }
+
+  // ---------- KL panel ----------
+  const gauss = (u, mu, sg) => Math.exp(-0.5 * ((u - mu) / sg) ** 2) / (sg * Math.sqrt(2 * Math.PI));
+
+  function drawKL() {
+    const o = canvases.k; if (!o) return;
+    const { ctx, W, H } = o;
+    ctx.clearRect(0, 0, W, H);
+    const { s, cx, sysH } = geom(W, H);
+    const base = sysH * 0.82;
+    const yS = (sysH * 0.66) / 0.8; // px per unit density
+    const sg = P.sigma;
+    const mx = cx + S.x * s;
+
+    function curve(mu) {
+      ctx.beginPath(); ctx.moveTo(0, base);
+      for (let px = 0; px <= W; px += 2) ctx.lineTo(px, base - gauss((px - cx) / s, mu, sg) * yS);
+      ctx.lineTo(W, base);
+    }
+
+    // axis
+    ctx.globalAlpha = 1; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, base); ctx.lineTo(W, base); ctx.stroke();
+
+    // fixed p_θ0
+    ctx.globalAlpha = alphaFor('equilibrium', 'stiffness');
+    curve(0); ctx.fillStyle = C['p-fill']; ctx.fill();
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2; ctx.stroke();
+
+    // moving p_θ
+    ctx.globalAlpha = alphaFor('displacement', 'stiffness', 'mass', 'frequency', 'potential');
+    curve(S.x); ctx.fillStyle = C['kl-soft']; ctx.fill();
+    ctx.strokeStyle = C.kl; ctx.lineWidth = 2 * boost('displacement', 'mass'); ctx.stroke();
+
+    // θ0 line
+    const peak = gauss(0, 0, sg) * yS;
+    ctx.globalAlpha = alphaFor('equilibrium');
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2 * boost('equilibrium');
+    ctx.beginPath(); ctx.moveTo(cx, base - Math.max(peak, sysH * 0.25) - 6); ctx.lineTo(cx, base + 4); ctx.stroke();
+    ctx.setLineDash([]);
+    label(ctx, 'θ₀', cx, base - Math.max(peak, sysH * 0.25) - 16, C.muted, { serif: true });
+
+    // moving θ marker
+    ctx.globalAlpha = alphaFor('displacement', 'mass');
+    ctx.strokeStyle = C.kl; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(mx, base); ctx.lineTo(mx, base - peak); ctx.stroke();
+
+    // σ bracket (stiffness)
+    ctx.globalAlpha = 0.9 * alphaFor('stiffness');
+    const by = base - peak * Math.exp(-0.5);
+    const bl = cx - sg * s, br = cx + sg * s;
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2 * boost('stiffness');
+    ctx.beginPath();
+    ctx.moveTo(bl, by - 4); ctx.lineTo(bl, by); ctx.lineTo(br, by); ctx.lineTo(br, by - 4);
+    ctx.stroke();
+    label(ctx, 'σ', Math.max(14, bl - 10), by, C.muted, { serif: true, align: 'right' });
+
+    // δ arrow
+    ctx.globalAlpha = alphaFor('displacement');
+    const dy = base + 30;
+    arrow(ctx, cx, dy, mx, dy, C.ink, 1.6 * boost('displacement'));
+    if (Math.abs(mx - cx) > 18) label(ctx, 'δ', (cx + mx) / 2, dy + 13, C.ink, { serif: true });
+
+    // force arrow −Fδ
+    ctx.globalAlpha = alphaFor('force');
+    const f = -kOf() * S.x;
+    const fy = base - peak - 16;
+    const fl = Math.max(-W * 0.4, Math.min(W * 0.4, f * s * 0.28));
+    arrow(ctx, mx, fy, mx + fl, fy, C.kl, 2.2 * boost('force'));
+    if (Math.abs(fl) > 16) label(ctx, '−Fδ', mx + fl / 2, fy - 12, C.kl, { serif: true });
+
+    ctx.globalAlpha = 1;
+    drawBowl(ctx, W, H, C.kl, 'KL(δ) = δ² / 2σ²', mx, base + 4);
+  }
+
+  // ---------- time trace ----------
+  function drawTrace() {
+    const o = canvases.t; if (!o) return;
+    const { ctx, W, H } = o;
+    ctx.clearRect(0, 0, W, H);
+    const left = 8, right = W - 8, win = 12;
+    const t1 = Math.max(win, S.t), t0 = t1 - win;
+    const tx = t => left + ((t - t0) / win) * (right - left);
+
+    // lane 1: x(t)
+    const l1t = 18, l1b = H * 0.54, l1m = (l1t + l1b) / 2, xr = 3;
+    ctx.globalAlpha = 1; ctx.strokeStyle = C.rule; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(left, l1m); ctx.lineTo(right, l1m); ctx.stroke();
+    ctx.globalAlpha = alphaFor('frequency', 'displacement', 'damping');
+    label(ctx, 'x(t) = δ(t)', left, l1t - 6, C.muted, { align: 'left', serif: true, size: 14 });
+    ctx.strokeStyle = C.ink; ctx.lineWidth = 1.8 * boost('frequency', 'displacement');
+    ctx.beginPath();
+    hist.forEach((h, i) => {
+      const y = l1m - (h.x / xr) * (l1b - l1t) / 2;
+      i ? ctx.lineTo(tx(h.t), y) : ctx.moveTo(tx(h.t), y);
+    });
+    ctx.stroke();
+
+    // lane 2: KL(t) and total energy
+    const l2t = H * 0.64, l2b = H - 6;
+    let emax = 0.2;
+    hist.forEach(h => { if (h.e > emax) emax = h.e; });
+    const ey = v => l2b - (v / emax) * (l2b - l2t);
+    ctx.globalAlpha = 1; ctx.strokeStyle = C.rule;
+    ctx.beginPath(); ctx.moveTo(left, l2b); ctx.lineTo(right, l2b); ctx.stroke();
+
+    ctx.globalAlpha = alphaFor('energy', 'potential', 'damping');
+    label(ctx, 'KL(t)  and total energy', left, l2t - 8, C.muted, { align: 'left', serif: true, size: 14 });
+    if (hist.length > 1) {
+      ctx.beginPath(); ctx.moveTo(tx(hist[0].t), l2b);
+      hist.forEach(h => ctx.lineTo(tx(h.t), ey(h.pe)));
+      ctx.lineTo(tx(hist[hist.length - 1].t), l2b); ctx.closePath();
+      ctx.fillStyle = C['kl-soft']; ctx.fill();
+      ctx.strokeStyle = C.kl; ctx.lineWidth = 1.5 * boost('potential');
+      ctx.beginPath();
+      hist.forEach((h, i) => i ? ctx.lineTo(tx(h.t), ey(h.pe)) : ctx.moveTo(tx(h.t), ey(h.pe)));
+      ctx.stroke();
+
+      ctx.globalAlpha = alphaFor('energy', 'damping');
+      ctx.setLineDash([6, 5]); ctx.strokeStyle = C.ink; ctx.lineWidth = 1.3 * boost('energy', 'damping');
+      ctx.beginPath();
+      hist.forEach((h, i) => i ? ctx.lineTo(tx(h.t), ey(h.e)) : ctx.moveTo(tx(h.t), ey(h.e)));
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------- readouts ----------
+  function readouts() {
+    const k = kOf(), w0 = Math.sqrt(k / P.m), z = P.g / (2 * Math.sqrt(k * P.m));
+    $('rK').textContent = k.toFixed(3);
+    $('rW').textContent = w0.toFixed(3);
+    $('rZ').textContent = z.toFixed(3);
+    let regime, period;
+    if (P.g === 0) { regime = 'Undamped: oscillates forever with constant energy'; }
+    else if (z < 0.97) { regime = 'Underdamped: overshoots and rings down'; }
+    else if (z <= 1.03) { regime = 'Critically damped: fastest return without overshoot'; }
+    else { regime = 'Overdamped: creeps back without oscillating, like gradient descent'; }
+    if (z < 1) {
+      const wd = Math.sqrt(k / P.m - (P.g * P.g) / (4 * P.m * P.m));
+      period = (2 * Math.PI / wd).toFixed(2) + ' s';
+    } else period = 'none';
+    $('rT').textContent = period;
+    $('rR').textContent = regime;
+  }
+
+  // ---------- loop ----------
+  let last = performance.now();
+  function frame(now) {
+    let dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (S.running && !S.dragging) {
+      const n = Math.max(1, Math.ceil(dt / (1 / 240)));
+      for (let i = 0; i < n; i++) rk4(dt / n);
+      S.t += dt;
+      hist.push({ t: S.t, x: S.x, pe: PE(), e: PE() + KE() });
+      while (hist.length && hist[0].t < S.t - 12.2) hist.shift();
+    }
+    drawSpring(); drawKL(); drawTrace();
+    const pe = PE();
+    $('liveU').textContent = 'U = ' + pe.toFixed(3);
+    $('liveKL').textContent = 'KL = ' + pe.toFixed(3) + ' nats';
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- controls ----------
+  ['sigma', 'm', 'g'].forEach(key => el[key].addEventListener('input', () => { readParams(); readouts(); }));
+  el.A.addEventListener('input', () => {
+    readParams(); S.x = P.A; S.v = 0; S.t = 0; hist = [];
+  });
+  $('play').addEventListener('click', () => { S.running = !S.running; syncPlay(); });
+  $('release').addEventListener('click', () => { readParams(); release(); });
+
+  $('presets').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const p = b.dataset.p;
+    if (p === 'undamped') { el.g.value = 0; }
+    if (p === 'under') { el.m.value = 1; el.g.value = 0.3; }
+    if (p === 'critical') { readParams(); el.g.value = Math.min(7, 2 * Math.sqrt(kOf() * P.m)).toFixed(2); }
+    if (p === 'gd') { el.m.value = 0.2; el.g.value = 4; }
+    readParams(); readouts(); release();
+  });
+
+  // dragging on either canvas sets the shared displacement
+  function attachDrag(c, name) {
+    c.addEventListener('pointerdown', e => {
+      const o = canvases[name], r = c.getBoundingClientRect();
+      const y = e.clientY - r.top;
+      if (y > o.H * 0.55) return;
+      S.dragging = name; c.setPointerCapture(e.pointerId); move(e);
+    });
+    function move(e) {
+      if (S.dragging !== name) return;
+      const o = canvases[name], r = c.getBoundingClientRect();
+      const { s, cx } = geom(o.W, o.H);
+      S.x = Math.max(-2.8, Math.min(2.8, (e.clientX - r.left - cx) / s));
+      S.v = 0;
+    }
+    c.addEventListener('pointermove', move);
+    const end = () => {
+      if (S.dragging !== name) return;
+      S.dragging = null; S.t = 0; hist = []; S.running = true; syncPlay();
+    };
+    c.addEventListener('pointerup', end);
+    c.addEventListener('pointercancel', end);
+  }
+  attachDrag(cvS, 's'); attachDrag(cvK, 'k');
+
+  // analogy table highlighting
+  const rows = [...document.querySelectorAll('#analogy tr')];
+  function paintRows() {
+    rows.forEach(r => {
+      r.classList.toggle('on', r.dataset.hl === S.hl);
+      r.classList.toggle('pinned', r.dataset.hl === S.pinned);
+    });
+  }
+  rows.forEach(r => {
+    const key = r.dataset.hl;
+    r.addEventListener('mouseenter', () => { S.hl = key; paintRows(); });
+    r.addEventListener('mouseleave', () => { S.hl = S.pinned; paintRows(); });
+    r.addEventListener('focus', () => { S.hl = key; paintRows(); });
+    r.addEventListener('blur', () => { S.hl = S.pinned; paintRows(); });
+    const toggle = () => { S.pinned = S.pinned === key ? null : key; S.hl = S.pinned ?? key; paintRows(); };
+    r.addEventListener('click', toggle);
+    r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+  });
+
+  readouts(); syncPlay();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
