@@ -89,6 +89,11 @@ The repo is intentionally educational and code-forward. Many notebooks are desig
 - the same idea in a production library like `torch`, `transformers`, or `trl`
 - how to evaluate the model before and after training
 
+## Interactive explainers
+
+- [Forward vs. reverse KL](docs/kl-divergence/index.html): interactively explore mode covering, mode seeking, and approximating a known true posterior.
+- [The spring inside KL divergence](docs/kl-spring/index.html): see how a KL penalty behaves like a spring near a reference policy.
+
 ## Requirements
 
 Most notebooks assume a Python environment with the common ML stack, including:
