@@ -1,0 +1,61 @@
+{
+  "source_model": "mujoco_menagerie/robotstudio_so101",
+  "fitted_against": {
+    "dataset": "lerobot/svla_so101_pickplace",
+    "train_episodes": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "val_episodes": [
+      10,
+      11,
+      12,
+      13
+    ]
+  },
+  "control_hz": 30,
+  "physics_timestep": 0.005,
+  "substeps_per_action": 7,
+  "units": "dataset is normalised [-100,100]; mapped affinely onto per-joint ctrlrange",
+  "official_parameters": {
+    "kp": 998.22,
+    "kv": 2.731,
+    "damping": 0.6,
+    "armature": 0.028,
+    "frictionloss": 0.052
+  },
+  "identified_parameters": {
+    "kp": 18.0,
+    "kv": 2.731,
+    "damping": 0.2,
+    "armature": 0.12,
+    "frictionloss": 0.052
+  },
+  "validation": {
+    "real_lag_frames": 4,
+    "official_lag_frames": 0.0,
+    "identified_lag_frames": 4.0,
+    "official_rmse_val": 6.192386107453843,
+    "identified_rmse_val": 1.4361911646073786,
+    "real_corr_err_speed": 0.8850581779129405,
+    "official_corr_err_speed": 0.6708051126080641,
+    "identified_corr_err_speed": 0.9771249590678776
+  },
+  "parameter_confidence": {
+    "kp": "well identified -- dominates lag and RMSE",
+    "kv": "well identified AT the fitted kp (appears irrelevant at kp=998: saturation)",
+    "damping": "well identified",
+    "armature": "WEAKLY identified -- landed on the grid edge, small RMSE effect over a 12x range",
+    "frictionloss": "not identified from this data -- left at default"
+  },
+  "known_unmodelled": [
+    "backlash (+/-0.5 deg, defined but disabled in the MJCF)",
+    "encoder quantisation (34-83% of frames repeat, see nb 2)",
+    "state-dependent damping and stiction",
+    "no contact in this fit: free-space motion only"
+  ]
+}

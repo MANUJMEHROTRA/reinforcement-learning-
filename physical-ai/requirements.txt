@@ -1,0 +1,20 @@
+# Notebooks 1-2 (data, pandas only)
+numpy>=2.0
+pandas>=2.2
+matplotlib>=3.8
+pyarrow>=16
+huggingface_hub>=0.26
+
+# Notebooks 3-5 (simulation & control from scratch)
+mujoco>=3.15
+gymnasium>=1.0
+
+# Notebooks 6-8 (learning policies)
+torch>=2.4
+
+# Notebook 10 (production stack) - install when you reach it, it pulls a lot:
+#   uv pip install "lerobot[pusht]"
+
+# Jupyter
+jupyter
+ipykernel
