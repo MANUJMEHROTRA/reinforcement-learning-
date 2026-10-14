@@ -1,0 +1,113 @@
+{
+  "name": "so101_bc_history1",
+  "created_with": "physical-ai course, notebook 10",
+  "architecture": {
+    "type": "MLP",
+    "hidden": [
+      256,
+      256
+    ],
+    "activation": "ReLU",
+    "output_activation": "tanh",
+    "parameters": 70662
+  },
+  "weights": {
+    "file": "policy.pt",
+    "sha256_16": "34ecc6aba2fe6ad0"
+  },
+  "observation": {
+    "description": "current joint state concatenated with the previous 1 frame(s)",
+    "order": [
+      "t-1",
+      "t-0"
+    ],
+    "per_frame_features": [
+      "shoulder_pan.pos",
+      "shoulder_lift.pos",
+      "elbow_flex.pos",
+      "wrist_flex.pos",
+      "wrist_roll.pos",
+      "gripper.pos"
+    ],
+    "dim": 12,
+    "normalization": "mean/std, per joint, from meta of the training set",
+    "state_mean": [
+      8.466805572117442,
+      -54.95680227592717,
+      66.43673759986892,
+      69.2436401627189,
+      -53.61544422178637,
+      8.300628357998654
+    ],
+    "state_std": [
+      44.06264946427453,
+      36.63718270664734,
+      27.39001916175126,
+      13.294092685757787,
+      17.176423532140003,
+      8.506397093225663
+    ],
+    "history_padding": "at episode start, repeat the first frame"
+  },
+  "action": {
+    "semantics": "POSITION TARGETS in normalised servo units, not torques (nb 1)",
+    "dim": 6,
+    "names": [
+      "shoulder_pan.pos",
+      "shoulder_lift.pos",
+      "elbow_flex.pos",
+      "wrist_flex.pos",
+      "wrist_roll.pos",
+      "gripper.pos"
+    ],
+    "network_output_range": [
+      -1,
+      1
+    ],
+    "denormalization": "a = (y+1)/2 * (max-min) + min",
+    "action_min": [
+      -93.45587921142578,
+      -100.0,
+      12.972234725952148,
+      33.53166198730469,
+      -92.47863006591797,
+      0.0
+    ],
+    "action_max": [
+      88.01470947265625,
+      8.12631607055664,
+      100.0,
+      99.4900131225586,
+      -20.927961349487305,
+      32.99845504760742
+    ]
+  },
+  "control": {
+    "rate_hz": 30,
+    "note": "trained at this rate; the MDP changes if you run it at another (nb 1 s5)",
+    "expected_actuation_lag_frames": 4
+  },
+  "trained_against_dynamics": {
+    "kp": 18.0,
+    "kv": 2.731,
+    "damping": 0.2,
+    "armature": 0.12,
+    "frictionloss": 0.052
+  },
+  "dynamics_provenance": {
+    "source_model": "mujoco_menagerie/robotstudio_so101",
+    "identified_in": "notebook 5",
+    "held_out_rmse_vs_real": 1.4361911646073786,
+    "official_model_rmse_vs_real": 6.192386107453843
+  },
+  "limitations": [
+    "FREE SPACE ONLY: the dynamics fit used reach-and-carry motion; nothing here constrains contact, grasping, or pushing (nb 5, nb 9)",
+    "no vision: the policy cannot see objects, so it cannot adapt to object placement (nb 7)",
+    "trained on a synthetic dataset in this notebook -- NOT a deployable policy, it exists to demonstrate the export contract",
+    "single seed; nb 7 showed offline and closed-loop metrics can rank models in opposite orders, so offline MSE is weak evidence"
+  ],
+  "environment": {
+    "python": "3.11.11",
+    "torch": "2.14.1"
+  }
+}

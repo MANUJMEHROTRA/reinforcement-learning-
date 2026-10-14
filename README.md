@@ -93,6 +93,7 @@ The repo is intentionally educational and code-forward. Many notebooks are desig
 
 - [Forward vs. reverse KL](docs/kl-divergence/index.html): interactively explore mode covering, mode seeking, and approximating a known true posterior.
 - [The spring inside KL divergence](docs/kl-spring/index.html): see how a KL penalty behaves like a spring near a reference policy.
+- [Three ways to push a policy](docs/three-forces/index.html): DPO, GRPO and SAC as three force laws acting on the same cart — a tipping lever, a waterline of group advantages, and a critic bowl held open by entropy pressure.
 
 ## Requirements
 

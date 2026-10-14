@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Three ways to push a policy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F1F3F6;
+  --surface: #FFFFFF;
+  --ink: #17223B;
+  --muted: #5D667A;
+  --rule: #D3D9E3;
+  --dpo: #9C2C77;
+  --grpo: #2B59C3;
+  --sac: #0B7D4F;
+  --dpo-soft: rgba(156, 44, 119, 0.12);
+  --grpo-soft: rgba(43, 89, 195, 0.11);
+  --sac-soft: rgba(11, 125, 79, 0.12);
+  --p-fill: rgba(23, 34, 59, 0.08);
+  --row-hl: #E6ECF7;
+  --serif: "Literata", Georgia, "Times New Roman", serif;
+  --sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #10151F;
+    --surface: #171E2B;
+    --ink: #E4E9F2;
+    --muted: #98A2B6;
+    --rule: #2A3446;
+    --dpo: #C2639C;
+    --grpo: #6189E3;
+    --sac: #2BA88C;
+    --dpo-soft: rgba(194, 99, 156, 0.15);
+    --grpo-soft: rgba(97, 137, 227, 0.15);
+    --sac-soft: rgba(43, 168, 140, 0.15);
+    --p-fill: rgba(228, 233, 242, 0.10);
+    --row-hl: #222C3F;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #10151F;
+  --surface: #171E2B;
+  --ink: #E4E9F2;
+  --muted: #98A2B6;
+  --rule: #2A3446;
+  --dpo: #C2639C;
+  --grpo: #6189E3;
+  --sac: #2BA88C;
+  --dpo-soft: rgba(194, 99, 156, 0.15);
+  --grpo-soft: rgba(97, 137, 227, 0.15);
+  --sac-soft: rgba(43, 168, 140, 0.15);
+  --p-fill: rgba(228, 233, 242, 0.10);
+  --row-hl: #222C3F;
+}
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.wrap { max-width: 1320px; margin: 0 auto; padding: 2.5rem 1.25rem 3rem; }
+header { max-width: 48rem; margin-bottom: 1.75rem; }
+h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.75rem;
+}
+.lede { font-size: 1.08rem; color: var(--muted); margin: 0 0 0.6rem; max-width: 42rem; }
+.lede b { color: var(--ink); font-weight: 400; }
+.kin { font-size: 0.9rem; color: var(--muted); margin: 0; }
+.kin a { color: var(--grpo); }
+h2 { font-family: var(--serif); font-weight: 600; font-size: 1.35rem; margin: 0 0 0.75rem; }
+.math { font-family: var(--serif); font-style: italic; }
+.math .up { font-style: normal; }
+
+/* Equation bridge */
+.law { margin-bottom: 1rem; }
+.law .shared {
+  font-family: var(--serif); font-style: italic; font-size: clamp(1.1rem, 2.2vw, 1.45rem);
+  padding: 0.7rem 1rem; background: var(--surface); border: 1px solid var(--rule);
+  border-radius: 4px 4px 0 0; display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; align-items: baseline;
+}
+.law .shared small { font-family: var(--sans); font-style: normal; font-size: 0.85rem; color: var(--muted); }
+.bridge { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+.eq {
+  padding: 0.85rem 1rem;
+  font-family: var(--serif); font-size: 1.02rem; font-style: italic;
+  display: flex; flex-direction: column; gap: 0.3rem;
+  border: 1px solid var(--rule); border-top: none;
+}
+.eq + .eq { border-left: none; }
+.eq .f { line-height: 1.5; }
+.eq small { font-family: var(--sans); font-style: normal; font-size: 0.82rem; color: var(--muted); }
+.eq b { font-family: var(--sans); font-style: normal; font-size: 0.95rem; font-weight: 700; }
+.eq.d { border-bottom: 3px solid var(--dpo); background: var(--dpo-soft); }
+.eq.g { border-bottom: 3px solid var(--grpo); background: var(--grpo-soft); }
+.eq.s { border-bottom: 3px solid var(--sac); background: var(--sac-soft); }
+.eq.d b { color: var(--dpo); } .eq.g b { color: var(--grpo); } .eq.s b { color: var(--sac); }
+
+/* Panels */
+.stage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; padding: 0.75rem 0.9rem 0.15rem; gap: 0.75rem; }
+.panel-head h3 { font-family: var(--serif); font-weight: 600; font-size: 1.05rem; margin: 0; }
+.panel.d .panel-head h3 { color: var(--dpo); }
+.panel.g .panel-head h3 { color: var(--grpo); }
+.panel.s .panel-head h3 { color: var(--sac); }
+.panel-head .live { font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.panel canvas { display: block; width: 100%; height: 370px; touch-action: pan-y; cursor: ew-resize; }
+.panel p.cap { margin: 0; padding: 0 0.9rem 0.85rem; font-size: 0.85rem; color: var(--muted); }
+.panel p.cap b { color: var(--ink); font-weight: 400; }
+
+/* Full width figures */
+.wide { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; margin-top: 1rem; padding: 1rem 1rem 0.85rem; }
+.wide .head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.4rem; }
+.wide .head p { margin: 0; color: var(--muted); font-size: 0.88rem; max-width: 46rem; }
+.wide canvas { display: block; width: 100%; }
+#cvTrack { height: 260px; cursor: ew-resize; touch-action: pan-y; }
+#cvTrace { height: 215px; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1.1rem; font-size: 0.85rem; color: var(--muted); padding-top: 0.5rem; }
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.legend i { width: 20px; height: 0; border-top-width: 3px; border-radius: 2px; display: inline-block; }
+.legend i.d { border-top: 3px solid var(--dpo); }
+.legend i.g { border-top: 3px dashed var(--grpo); }
+.legend i.s { border-top: 3px dotted var(--sac); }
+.legend i.r { border-top: 3px solid var(--muted); opacity: 0.5; }
+
+/* Lower grid */
+.lower { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); gap: 1rem; margin-top: 1rem; align-items: start; }
+.lower > *, .stage > * { min-width: 0; }
+.box { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 1.1rem; }
+.ctrl { margin-bottom: 0.75rem; }
+.ctrl label { display: flex; justify-content: space-between; font-size: 0.92rem; margin-bottom: 0.15rem; gap: 1rem; }
+.ctrl label output { font-variant-numeric: tabular-nums; color: var(--muted); }
+.ctrl .hint { font-size: 0.78rem; color: var(--muted); }
+input[type=range] { width: 100%; max-width: 100%; accent-color: var(--ink); }
+.ctrl.d input[type=range] { accent-color: var(--dpo); }
+.ctrl.g input[type=range] { accent-color: var(--grpo); }
+.ctrl.s input[type=range] { accent-color: var(--sac); }
+.group-h { font-family: var(--serif); font-weight: 600; font-size: 1rem; margin: 1.1rem 0 0.5rem; padding-top: 0.8rem; border-top: 1px solid var(--rule); }
+.group-h.d { color: var(--dpo); } .group-h.g { color: var(--grpo); } .group-h.s { color: var(--sac); }
+.btns { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0.4rem 0 0.8rem; }
+button {
+  font: inherit; font-size: 0.88rem;
+  color: var(--ink); background: transparent;
+  border: 1px solid var(--rule); border-radius: 999px;
+  padding: 0.3rem 0.8rem; cursor: pointer;
+}
+button:hover { border-color: var(--ink); }
+button.primary { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+button.on { background: var(--row-hl); border-color: var(--ink); }
+button:focus-visible, input:focus-visible, tr:focus-visible { outline: 2px solid var(--grpo); outline-offset: 2px; }
+.sub-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.25rem; }
+.toggles { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; margin-bottom: 0.6rem; }
+.toggles label { display: flex; gap: 0.5rem; align-items: baseline; }
+.story {
+  margin: 0.2rem 0 0; padding: 0.7rem 0.85rem; background: var(--paper);
+  border-left: 3px solid var(--ink); font-size: 0.9rem;
+}
+.story b { font-family: var(--serif); }
+
+/* Tables */
+.tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.tablewrap table { min-width: 30rem; }
+.readouts .tablewrap table { min-width: 26rem; }
+caption { text-align: left; color: var(--muted); font-size: 0.86rem; padding-bottom: 0.6rem; }
+th { text-align: left; font-family: var(--serif); font-weight: 600; font-size: 0.98rem; padding: 0.35rem 0.5rem; border-bottom: 2px solid var(--rule); vertical-align: bottom; }
+th.d { color: var(--dpo); } th.g { color: var(--grpo); } th.s { color: var(--sac); }
+td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+td.k { color: var(--muted); }
+tbody tr { cursor: pointer; transition: background-color 0.12s; }
+tbody tr:hover, tbody tr.on { background: var(--row-hl); }
+tbody tr.pinned td:first-child { box-shadow: inset 3px 0 0 var(--ink); }
+.readouts table { font-size: 0.86rem; }
+.readouts td, .readouts th { padding: 0.35rem 0.4rem; }
+.readouts tbody tr { cursor: default; }
+.readouts tbody tr:hover { background: transparent; }
+.readouts b { font-variant-numeric: tabular-nums; font-weight: 700; }
+.swatch { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 0.35rem; }
+.swatch.d { background: var(--dpo); } .swatch.g { background: var(--grpo); } .swatch.s { background: var(--sac); }
+.status { font-size: 0.82rem; color: var(--muted); }
+
+/* Derivation */
+.deriv { margin-top: 2.5rem; }
+.deriv-grid { display: grid; grid-template-columns: 8.5rem repeat(3, 1fr); border-top: 1px solid var(--rule); }
+.deriv-grid > div { padding: 0.7rem 0.7rem; border-bottom: 1px solid var(--rule); font-size: 0.9rem; }
+.deriv-grid .step { color: var(--muted); font-size: 0.86rem; padding-left: 0; }
+.deriv-grid .colhead { font-family: var(--serif); font-weight: 600; font-size: 1rem; }
+.deriv-grid .colhead.d { color: var(--dpo); }
+.deriv-grid .colhead.g { color: var(--grpo); }
+.deriv-grid .colhead.s { color: var(--sac); }
+.notes { margin-top: 2rem; max-width: 48rem; color: var(--muted); font-size: 0.92rem; }
+.notes h3 { font-family: var(--serif); color: var(--ink); font-size: 1.05rem; margin: 1.2rem 0 0.4rem; }
+.notes p { margin: 0 0 0.6rem; }
+.notes code { font-size: 0.88em; }
+
+@media (max-width: 1080px) {
+  .stage { grid-template-columns: 1fr; }
+  .bridge { grid-template-columns: 1fr; }
+  .eq + .eq { border-left: 1px solid var(--rule); }
+  .lower { grid-template-columns: 1fr; }
+  .panel canvas { height: 340px; }
+  .deriv-grid { grid-template-columns: 1fr; }
+  .deriv-grid .step { background: var(--paper); font-weight: 700; }
+  .deriv-grid .blank { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  tbody tr { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Three ways to push a policy</h1>
+  <p class="lede">DPO, GRPO and SAC all move the same object: a distribution over actions, sitting somewhere on a reward landscape it cannot see. They differ in <b>one thing only</b> &mdash; the force law. Here all three ride the same cart on the same track, and you can watch which force takes them where.</p>
+  <p class="kin">A companion to <a href="Spring%20kl%20analogy.html">the spring inside KL divergence</a>, which is the tether you will see hooked to the GRPO cart.</p>
+</header>
+
+<div class="law">
+  <div class="shared">m&thinsp;&theta;&#776; + &gamma;&thinsp;&theta;&#775; = F<small>Same cart: mass is optimizer momentum, friction is momentum decay. Only F changes.</small></div>
+  <div class="bridge" aria-label="The three force laws">
+    <div class="eq d"><b>DPO &mdash; the lever</b><span class="f">F = &eta;&thinsp;&beta;(y<sub>w</sub>&minus;y<sub>l</sub>)/&sigma;&sup2; &middot; &#x5b;1&minus;&sigma;(h)&#x5d;</span><small>One labelled pair tips a beam. The grip 1&minus;&sigma;(h) slips away as the margin h grows. The reward function is never consulted.</small></div>
+    <div class="eq g"><b>GRPO &mdash; the waterline</b><span class="f">F = &eta;&thinsp;&#x27e8;Â<sub>i</sub>(a<sub>i</sub>&minus;&theta;)&#x27e9;/&sigma;&sup2; &minus; &eta;&beta;<sub>KL</sub>&delta;/&sigma;&sup2;</span><small>G fresh samples float above or sink below the group mean. Normalised by the group&rsquo;s own spread, clipped, and tethered to the reference.</small></div>
+    <div class="eq s"><b>SAC &mdash; the carved bowl</b><span class="f">F = &eta;&thinsp;&#x27e8;&part;<sub>a</sub>Q&#770;<sub>min</sub>&#x27e9;, &nbsp;&sigma;&#775; &prop; &#x27e8;&part;<sub>a</sub>Q&#770;&thinsp;&epsilon;&#x27e9; + &alpha;/&sigma;</span><small>A critic carved out of replayed samples supplies the slope. Entropy acts as gas pressure that inflates the policy&rsquo;s width.</small></div>
+  </div>
+</div>
+
+<section class="stage">
+  <div class="panel d">
+    <div class="panel-head"><h3>DPO</h3><span class="live" id="liveD">&theta; = &minus;1.90 &middot; R = 0.22</span></div>
+    <canvas id="cvDPO" role="img" aria-label="A balance beam tipped by a preferred and a rejected sample, a straight implicit-reward line, and the policy cart below"></canvas>
+    <p class="cap"><b>Drag the two pins.</b> The beam tips toward whichever one the policy already prefers; once tipped, the grip is gone. Nothing here knows the reward curve.</p>
+  </div>
+  <div class="panel g">
+    <div class="panel-head"><h3>GRPO</h3><span class="live" id="liveG">&theta; = &minus;1.90 &middot; R = 0.22</span></div>
+    <canvas id="cvGRPO" role="img" aria-label="A group of sampled rewards shown as buoys above and below a waterline at the group mean, with a KL spring on the cart below"></canvas>
+    <p class="cap"><b>Buoys are this batch&rsquo;s samples.</b> Above the waterline they lift, below they sink. Flat water means every advantage is zero and the cart gets no push at all.</p>
+  </div>
+  <div class="panel s">
+    <div class="panel-head"><h3>SAC</h3><span class="live" id="liveS">&theta; = &minus;1.90 &middot; R = 0.22</span></div>
+    <canvas id="cvSAC" role="img" aria-label="A critic bowl being carved from replay buffer samples, with entropy pressure arrows inflating the policy width"></canvas>
+    <p class="cap"><b>The bowl is learned, not given.</b> Replayed samples carve it; the cart rolls down whatever has been carved so far. No reference tether &mdash; its regulariser pushes outward instead.</p>
+  </div>
+</section>
+
+<section class="wide">
+  <div class="head">
+    <h2>The same track</h2>
+    <p>The true reward R(a) &mdash; the thing none of the three can see directly. Drag any marker to move that policy by hand.</p>
+  </div>
+  <canvas id="cvTrack" role="img" aria-label="The true reward landscape with the three policy positions and widths marked on it"></canvas>
+  <div class="legend">
+    <span><i class="d"></i> DPO</span>
+    <span><i class="g"></i> GRPO</span>
+    <span><i class="s"></i> SAC</span>
+    <span><i class="r"></i> reference &pi;<sub>ref</sub></span>
+    <span>bars below the axis show each policy&rsquo;s width &theta; &plusmn; &sigma;</span>
+  </div>
+</section>
+
+<section class="wide">
+  <div class="head">
+    <h2>Reward actually collected</h2>
+    <p>R(&theta;) over the last 25 seconds. One axis, three lines, each one also dashed differently. Hover for exact values.</p>
+  </div>
+  <canvas id="cvTrace" role="img" aria-label="Reward at the current policy mean over time for DPO, GRPO and SAC"></canvas>
+  <div class="legend">
+    <span><i class="d"></i> DPO</span>
+    <span><i class="g"></i> GRPO</span>
+    <span><i class="s"></i> SAC</span>
+    <span><i class="r"></i> best R on this landscape</span>
+  </div>
+</section>
+
+<section class="lower">
+  <div class="box">
+    <h2>Controls</h2>
+    <div class="btns">
+      <button id="play" class="primary">Pause</button>
+      <button id="reset">Reset all</button>
+      <button id="speed">Speed 2&times;</button>
+    </div>
+
+    <div class="sub-label">Landscape</div>
+    <div class="btns" id="lands">
+      <button data-l="hills" class="on">Two hills</button>
+      <button data-l="plateau">Flat plateau</button>
+      <button data-l="rugged">Rugged</button>
+    </div>
+
+    <div class="sub-label">Stories to try</div>
+    <div class="btns" id="presets">
+      <button data-p="wrongpin">Pin the wrong winner</button>
+      <button data-p="flat">Starve the group</button>
+      <button data-p="hot">Turn up the heat</button>
+      <button data-p="cold">Freeze the heat</button>
+      <button data-p="leash">Tighten the leash</button>
+      <button data-p="judge">Noisy judge</button>
+    </div>
+    <p class="story" id="story"><b>Where to start:</b> let it run. All three begin at &pi;<sub>ref</sub> on the left. Watch which ones stop at the small hill, which walks straight past it, and which is still widening.</p>
+
+    <div class="ctrl">
+      <label for="eta">Shared drive &eta; <output id="oEta">2.00</output></label>
+      <input id="eta" type="range" min="0.4" max="5" step="0.1" value="2">
+      <div class="hint">One gain on all three forces, so nothing wins by being tuned louder.</div>
+    </div>
+    <div class="ctrl">
+      <label for="mass">Mass m <output id="oMass">1.00</output></label>
+      <input id="mass" type="range" min="0.2" max="3" step="0.05" value="1">
+    </div>
+    <div class="ctrl">
+      <label for="damp">Friction &gamma; <output id="oDamp">2.20</output></label>
+      <input id="damp" type="range" min="0.2" max="7" step="0.1" value="2.2">
+    </div>
+    <div class="ctrl">
+      <label for="sigma">Sampling width &sigma; <output id="oSigma">0.45</output></label>
+      <input id="sigma" type="range" min="0.12" max="1.5" step="0.01" value="0.45">
+      <div class="hint">Fixed width for DPO and GRPO. SAC sets its own &mdash; this only seeds it on reset.</div>
+    </div>
+    <div class="ctrl">
+      <label for="noise">Reward noise <output id="oNoise">0.03</output></label>
+      <input id="noise" type="range" min="0" max="0.3" step="0.01" value="0.03">
+      <div class="hint">Noise on every observed reward. DPO never observes one.</div>
+    </div>
+
+    <div class="group-h d">DPO</div>
+    <div class="ctrl d">
+      <label for="beta">Strength &beta; <output id="oBeta">0.12</output></label>
+      <input id="beta" type="range" min="0.02" max="0.6" step="0.01" value="0.12">
+      <div class="hint">Pins: y<sub>w</sub> = <output id="oYw">0.15</output>, y<sub>l</sub> = <output id="oYl">&minus;2.40</output>. Drag them in the DPO panel.</div>
+    </div>
+
+    <div class="group-h g">GRPO</div>
+    <div class="ctrl g">
+      <label for="gsize">Group size G <output id="oG">8</output></label>
+      <input id="gsize" type="range" min="2" max="48" step="1" value="8">
+    </div>
+    <div class="ctrl g">
+      <label for="bkl"><span>KL weight &beta;<sub>KL</sub></span> <output id="oBkl">0.04</output></label>
+      <input id="bkl" type="range" min="0" max="0.6" step="0.01" value="0.04">
+      <div class="hint">Stiffness of the spring back to &pi;<sub>ref</sub>.</div>
+    </div>
+    <div class="ctrl g">
+      <label for="clip">Clip <output id="oClip">8.0</output></label>
+      <input id="clip" type="range" min="0.3" max="12" step="0.1" value="8">
+      <div class="hint">Stop blocks on the force. Stands in for the ratio clip.</div>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="norm" checked> Divide advantages by the group&rsquo;s standard deviation</label>
+    </div>
+
+    <div class="group-h s">SAC</div>
+    <div class="ctrl s">
+      <label for="alpha">Temperature &alpha; <output id="oAlpha">0.08</output></label>
+      <input id="alpha" type="range" min="0" max="0.6" step="0.005" value="0.08">
+      <div class="hint">Entropy pressure. Settles at &sigma;* = &radic;(&alpha;/&kappa;&#770;) against the bowl&rsquo;s curvature.</div>
+    </div>
+    <div class="ctrl s">
+      <label for="lrq">Critic learning rate <output id="oLrq">0.22</output></label>
+      <input id="lrq" type="range" min="0.03" max="0.6" step="0.01" value="0.22">
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="twin" checked> Twin critics, take the minimum (pessimism)</label>
+      <label><input type="checkbox" id="replay" checked> Replay old samples (off = on-policy only)</label>
+    </div>
+  </div>
+
+  <div>
+    <div class="box">
+      <h2>One machine, three force laws</h2>
+      <div class="tablewrap">
+      <table>
+        <caption>Point at a row to light up the matching parts in all three panels. Click to keep it lit.</caption>
+        <thead><tr><th>Part of the machine</th><th class="d">DPO</th><th class="g">GRPO</th><th class="s">SAC</th></tr></thead>
+        <tbody id="analogy">
+          <tr data-hl="signal" tabindex="0">
+            <td class="k">Where the signal comes from</td>
+            <td>Two labelled completions, fixed forever</td>
+            <td>G fresh samples from the current policy</td>
+            <td>A replay buffer of everything ever sampled</td>
+          </tr>
+          <tr data-hl="baseline" tabindex="0">
+            <td class="k">What counts as &ldquo;good&rdquo;</td>
+            <td>Better than the rejected one</td>
+            <td>Above the group mean &mdash; the waterline</td>
+            <td>Higher on the critic&rsquo;s own bowl</td>
+          </tr>
+          <tr data-hl="force" tabindex="0">
+            <td class="k">The push on the cart</td>
+            <td>Beam torque, always toward y<sub>w</sub></td>
+            <td>Sum of buoy pulls, clipped</td>
+            <td>Slope of the carved bowl</td>
+          </tr>
+          <tr data-hl="tether" tabindex="0">
+            <td class="k">What holds it back</td>
+            <td>&beta; inside the sigmoid &mdash; an implicit tether</td>
+            <td>An explicit KL spring to &pi;<sub>ref</sub></td>
+            <td>Nothing. Entropy pushes outward instead</td>
+          </tr>
+          <tr data-hl="width" tabindex="0">
+            <td class="k">The policy&rsquo;s width &sigma;</td>
+            <td>Along for the ride</td>
+            <td>Along for the ride &mdash; but it sets the sampling spread</td>
+            <td>Actively controlled: pressure &alpha;/&sigma; against walls &kappa;&#770;&sigma;</td>
+          </tr>
+          <tr data-hl="stall" tabindex="0">
+            <td class="k">When the force dies</td>
+            <td>Margin large: the grip slips to zero</td>
+            <td>All rewards equal: &sigma;<sub>group</sub> &rarr; 0, every Â = 0</td>
+            <td>At the bowl&rsquo;s floor, width in pressure balance</td>
+          </tr>
+          <tr data-hl="reuse" tabindex="0">
+            <td class="k">Fresh rewards needed</td>
+            <td>None. It never calls the reward function</td>
+            <td>G every single step, then thrown away</td>
+            <td>One per step, kept and reused for ever</td>
+          </tr>
+          <tr data-hl="fail" tabindex="0">
+            <td class="k">How it goes wrong here</td>
+            <td>Marches past the peak because the pins point that way</td>
+            <td>Stops on the first hill it sampled; starves on flat reward</td>
+            <td>Rolls down a bowl that is still wrong, or boils away at high &alpha;</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="box readouts" style="margin-top:1rem">
+      <h2>Live numbers</h2>
+      <div class="tablewrap">
+      <table>
+        <caption>The same state the panels draw, as text.</caption>
+        <thead><tr><th>Method</th><th>&theta;</th><th>R(&theta;)</th><th>&sigma;</th><th>|F|</th><th>Rewards used</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><span class="swatch d"></span>DPO</td><td><b id="dTh">&minus;1.90</b></td><td><b id="dR">0.22</b></td><td><b id="dSg">0.45</b></td><td><b id="dF">0.00</b></td><td><b id="dN">0</b></td><td class="status" id="dSt">&mdash;</td></tr>
+          <tr><td><span class="swatch g"></span>GRPO</td><td><b id="gTh">&minus;1.90</b></td><td><b id="gR">0.22</b></td><td><b id="gSg">0.45</b></td><td><b id="gF">0.00</b></td><td><b id="gN">0</b></td><td class="status" id="gSt">&mdash;</td></tr>
+          <tr><td><span class="swatch s"></span>SAC</td><td><b id="sTh">&minus;1.90</b></td><td><b id="sR">0.22</b></td><td><b id="sSg">0.45</b></td><td><b id="sF">0.00</b></td><td><b id="sN">0</b></td><td class="status" id="sSt">&mdash;</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="deriv">
+  <h2>Where each force comes from</h2>
+  <div class="deriv-grid">
+    <div class="step blank"></div><div class="colhead d">DPO</div><div class="colhead g">GRPO</div><div class="colhead s">SAC</div>
+
+    <div class="step">What is maximised</div>
+    <div>log &sigma;(&beta; log <span class="math">&pi;<sub>&theta;</sub>(y<sub>w</sub>)/&pi;<sub>ref</sub>(y<sub>w</sub>)</span> &minus; &beta; log <span class="math">&pi;<sub>&theta;</sub>(y<sub>l</sub>)/&pi;<sub>ref</sub>(y<sub>l</sub>)</span>)</div>
+    <div><span class="math">E&#x5b;Â&nbsp;log &pi;<sub>&theta;</sub>(a)&#x5d; &minus; &beta;<sub>KL</sub> KL(&pi;<sub>&theta;</sub>&#8214;&pi;<sub>ref</sub>)</span>, with Â the group-standardised reward</div>
+    <div><span class="math">E<sub>a&sim;&pi;</sub>&#x5b;Q(a)&#x5d; + &alpha;H(&pi;)</span>, Q fitted to replayed rewards</div>
+
+    <div class="step">Gradient, with Gaussians of equal width</div>
+    <div>The margin is exactly <span class="math">h = &beta;(y<sub>w</sub>&minus;y<sub>l</sub>)(&theta;&minus;&theta;<sub>ref</sub>)/&sigma;&sup2;</span> &mdash; linear in &theta;. So the force is a constant direction times a vanishing gate.</div>
+    <div><span class="math">&nabla;<sub>&theta;</sub> log &pi; = (a&minus;&theta;)/&sigma;&sup2;</span>, so each sample pulls toward itself with weight Â<sub>i</sub>.</div>
+    <div>Reparameterise <span class="math">a = &theta; + &sigma;&epsilon;</span>: the mean follows <span class="math">E&#x5b;&part;<sub>a</sub>Q&#x5d;</span> and the width follows <span class="math">E&#x5b;&part;<sub>a</sub>Q&nbsp;&epsilon;&#x5d; + &alpha;/&sigma;</span>.</div>
+
+    <div class="step">Fixed point</div>
+    <div>None in &theta;. The gate decays like <span class="math">e<sup>&minus;h</sup></span> but never reverses, so &theta; drifts along <span class="math">sign(y<sub>w</sub>&minus;y<sub>l</sub>)</span> for ever.</div>
+    <div>Where the sampled gradient balances the KL spring: <span class="math">&#x27e8;Â(a&minus;&theta;)&#x27e9; = &beta;<sub>KL</sub>(&theta;&minus;&theta;<sub>ref</sub>)</span>.</div>
+    <div>Bowl floor for &theta;; for the width, <span class="math">&kappa;&#770;&sigma; = &alpha;/&sigma;</span>, i.e. <span class="math">&sigma;* = &radic;(&alpha;/&kappa;&#770;)</span>.</div>
+
+    <div class="step">The physical picture</div>
+    <div>A beam on a pivot with a slipping clutch. Two pins, one up, one down.</div>
+    <div>Floats on water. The waterline rises with the group; only relative height pushes.</div>
+    <div>A bowl being carved while the ball rolls in it, with gas pressure inside the ball.</div>
+  </div>
+
+  <div class="notes">
+    <h3>What the analogy is honest about</h3>
+    <p>Every policy here is a Gaussian over a single continuous action, so <span class="math">&nabla; log &pi;</span>, the KL and the DPO margin all have closed forms &mdash; the forces drawn on screen are the real gradients of the real objectives for this family, not sketches. The DPO margin really is linear in &theta; here, which is why its implicit reward shows up as a straight line that can never grow a peak: with a Gaussian policy and a fixed pair, DPO has no way to represent &ldquo;good in the middle&rdquo;.</p>
+    <p>Three things are deliberate simplifications. GRPO&rsquo;s clip is drawn as a travel stop on the force rather than a ratio clip on each token, because there are no tokens here. SAC&rsquo;s critic is a kernel-smoothed table over the action axis instead of a neural network, and it has no bootstrapping: with one state and no transitions, Q is just the fitted reward. And the three forces share one gain &eta; so that they move at comparable speed on screen &mdash; the race is about <em>where</em> each force points, never about which converges faster in wall-clock terms.</p>
+    <h3>What to take away</h3>
+    <p>Turn the temperature up and SAC&rsquo;s blob inflates until the ball is rolling on a blurred version of the landscape rather than the real one; that blur is what lets it leave the small hill, and it is also why too much of it parks the policy in a valley between peaks. Set the landscape flat and GRPO has nothing: identical rewards in a group give identically zero advantages, however large you make G. DPO keeps working on that flat landscape, which is the point of preference data &mdash; and keeps working just as happily when the pins point somewhere bad, which is the cost.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const sig = z => 1 / (1 + Math.exp(-z));
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let spare = null;
+  function randn() {
+    if (spare !== null) { const s = spare; spare = null; return s; }
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    const r = Math.sqrt(-2 * Math.log(u));
+    spare = r * Math.sin(2 * Math.PI * v);
+    return r * Math.cos(2 * Math.PI * v);
+  }
+
+  // ---------- the track ----------
+  const LO = -3, HI = 3, TREF = -1.9;
+  const LANDS = {
+    hills: a => 0.55 * Math.exp(-((a + 1.15) ** 2) / 0.605) + 1.0 * Math.exp(-((a - 1.55) ** 2) / 0.405),
+    plateau: a => 0.45 + 0.55 * sig((a - 1.35) / 0.16),
+    rugged: a => 0.55 + 0.4 * Math.sin(2.3 * a) * Math.exp(-0.06 * a * a)
+  };
+  let landKey = 'hills', R = LANDS.hills, rMax = 1, rBestA = 0;
+  function pickLand(key) {
+    landKey = key; R = LANDS[key];
+    rMax = 0; rBestA = LO;
+    for (let i = 0; i <= 600; i++) {
+      const a = LO + (HI - LO) * i / 600, r = R(a);
+      if (r > rMax) { rMax = r; rBestA = a; }
+    }
+    [...$('lands').children].forEach(b => b.classList.toggle('on', b.dataset.l === key));
+  }
+
+  // ---------- parameters ----------
+  const el = {
+    eta: $('eta'), m: $('mass'), g: $('damp'), sigma: $('sigma'), noise: $('noise'),
+    beta: $('beta'), G: $('gsize'), bkl: $('bkl'), clip: $('clip'), norm: $('norm'),
+    alpha: $('alpha'), lrq: $('lrq'), twin: $('twin'), replay: $('replay')
+  };
+  const P = {};
+  function readParams() {
+    P.eta = +el.eta.value; P.m = +el.m.value; P.g = +el.g.value;
+    P.sigma = +el.sigma.value; P.noise = +el.noise.value;
+    P.beta = +el.beta.value; P.G = +el.G.value; P.bkl = +el.bkl.value;
+    P.clip = +el.clip.value; P.norm = el.norm.checked;
+    P.alpha = +el.alpha.value; P.lrq = +el.lrq.value;
+    P.twin = el.twin.checked; P.replay = el.replay.checked;
+    $('oEta').textContent = P.eta.toFixed(2);
+    $('oMass').textContent = P.m.toFixed(2);
+    $('oDamp').textContent = P.g.toFixed(2);
+    $('oSigma').textContent = P.sigma.toFixed(2);
+    $('oNoise').textContent = P.noise.toFixed(2);
+    $('oBeta').textContent = P.beta.toFixed(2);
+    $('oG').textContent = P.G;
+    $('oBkl').textContent = P.bkl.toFixed(2);
+    $('oClip').textContent = P.clip.toFixed(1);
+    $('oAlpha').textContent = P.alpha.toFixed(3);
+    $('oLrq').textContent = P.lrq.toFixed(2);
+  }
+
+  // ---------- critic grid for SAC ----------
+  const K = 49, DX = (HI - LO) / (K - 1), HB = DX * 1.15;
+  const node = j => LO + j * DX;
+  function qAt(q, a) {
+    const t = clamp((a - LO) / DX, 0, K - 1), i = Math.floor(t), f = t - i;
+    return i >= K - 1 ? q[K - 1] : q[i] * (1 - f) + q[i + 1] * f;
+  }
+  function critFit(q, a, r, lr) {
+    const i0 = Math.max(0, Math.floor((a - 2.5 * HB - LO) / DX));
+    const i1 = Math.min(K - 1, Math.ceil((a + 2.5 * HB - LO) / DX));
+    for (let j = i0; j <= i1; j++) {
+      const w = Math.exp(-0.5 * ((node(j) - a) / HB) ** 2);
+      q[j] += lr * w * (r - q[j]);
+    }
+  }
+
+  // ---------- state ----------
+  const S = {
+    t: 0, running: !reduceMotion, speed: 2, hl: null, pinned: null,
+    drag: null, traceX: null
+  };
+  const D = { th: TREF, v: 0, sg: 0.45, F: 0, n: 0, h: 0, gate: 0.5, st: '' };
+  const G = { th: TREF, v: 0, sg: 0.45, F: 0, raw: 0, n: 0, st: '', grp: null, acc: 9, clipped: false };
+  const A = { th: TREF, v: 0, sg: 0.45, F: 0, n: 0, st: '', qA: new Float64Array(K), qB: new Float64Array(K), buf: [], kappa: 0, gs: 0, push: 0, pull: 0 };
+  let pins = { w: 0.15, l: -2.4 };
+  let hist = [], trail = { d: [], g: [], s: [] };
+
+  function resetAll(keepLand) {
+    readParams();
+    if (!keepLand) pickLand(landKey);
+    for (const o of [D, G, A]) { o.th = TREF; o.v = 0; o.sg = P.sigma; o.F = 0; o.n = 0; o.st = ''; }
+    G.grp = null; G.acc = 9;
+    A.qA = new Float64Array(K); A.qB = new Float64Array(K); A.buf = []; A.kappa = 0;
+    S.t = 0; hist = []; trail = { d: [], g: [], s: [] };
+    S.running = true; syncPlay();
+  }
+  function syncPlay() { $('play').textContent = S.running ? 'Pause' : 'Play'; }
+
+  function move(o, F, dt) {
+    o.F = F;
+    o.v += ((F - P.g * o.v) / P.m) * dt;
+    o.th += o.v * dt;
+    if (o.th < LO) { o.th = LO; o.v = 0; }
+    if (o.th > HI) { o.th = HI; o.v = 0; }
+  }
+
+  // ---------- force laws ----------
+  function stepDPO(dt) {
+    D.sg = P.sigma;
+    const d = pins.w - pins.l, s2 = D.sg * D.sg;
+    D.h = P.beta * d * (D.th - TREF) / s2;
+    D.gate = 1 - sig(D.h);
+    const F = P.eta * D.gate * P.beta * d / s2;
+    D.st = D.gate < 0.03 ? 'grip gone — pair exhausted'
+      : D.gate < 0.2 ? 'margin wide, grip slipping'
+      : 'pulling toward y_w';
+    move(D, F, dt);
+  }
+
+  function newGroup() {
+    G.sg = P.sigma;
+    const xs = new Float64Array(P.G), rs = new Float64Array(P.G);
+    let mean = 0;
+    for (let i = 0; i < P.G; i++) {
+      const a = clamp(G.th + G.sg * randn(), LO, HI);
+      xs[i] = a; rs[i] = R(a) + P.noise * randn(); mean += rs[i];
+    }
+    mean /= P.G;
+    let vsum = 0;
+    for (let i = 0; i < P.G; i++) vsum += (rs[i] - mean) ** 2;
+    const sd = Math.sqrt(vsum / P.G);
+    const s2 = G.sg * G.sg;
+    const adv = new Float64Array(P.G);
+    let g = 0;
+    for (let i = 0; i < P.G; i++) {
+      adv[i] = P.norm ? (rs[i] - mean) / (sd + 1e-4) : (rs[i] - mean);
+      g += adv[i] * (xs[i] - G.th) / s2;
+    }
+    g /= P.G;
+    G.n += P.G;
+    return { xs, rs, adv, mean, sd, g };
+  }
+  function stepGRPO(dt) {
+    G.acc += dt;
+    if (!G.grp || G.acc >= 0.3) { G.grp = newGroup(); G.acc = 0; }
+    const gr = G.grp, s2 = G.sg * G.sg;
+    const kl = -P.bkl * (G.th - TREF) / s2;
+    G.raw = P.eta * (gr.g + kl);
+    const F = clamp(G.raw, -P.clip, P.clip);
+    G.clipped = Math.abs(G.raw) > P.clip + 1e-9;
+    G.st = gr.sd < 0.012 ? 'flat water — every Â is 0'
+      : G.clipped ? 'clipping at the stop blocks'
+      : Math.abs(kl) > Math.abs(gr.g) ? 'held by the KL spring'
+      : 'climbing on group advantage';
+    move(G, F, dt);
+  }
+
+  let sacTick = 0;
+  function stepSAC(dt) {
+    sacTick += dt;
+    if (sacTick >= 1 / 30) {
+      sacTick = 0;
+      const a = clamp(A.th + A.sg * randn(), LO, HI);
+      const r = R(a) + P.noise * randn();
+      A.buf.push({ a, r, age: 0 });
+      if (A.buf.length > 600) A.buf.shift();
+      A.n++;
+      const B = Math.min(24, A.buf.length);
+      for (let b = 0; b < B; b++) {
+        const e = P.replay ? A.buf[(Math.random() * A.buf.length) | 0] : A.buf[A.buf.length - 1];
+        critFit(A.qA, e.a, e.r, P.lrq);
+        critFit(A.qB, e.a, e.r, P.lrq);
+      }
+    }
+    const qmin = x => P.twin ? Math.min(qAt(A.qA, x), qAt(A.qB, x)) : 0.5 * (qAt(A.qA, x) + qAt(A.qB, x));
+    const dQ = x => { const h = 0.07; return (qmin(x + h) - qmin(x - h)) / (2 * h); };
+    const M = 8;
+    let f = 0, gs = 0;
+    for (let i = 0; i < M; i++) {
+      const e = randn(), d = dQ(clamp(A.th + A.sg * e, LO, HI));
+      f += d; gs += d * e;
+    }
+    f /= M; gs /= M;
+    // curvature of the carved bowl at theta, for the pressure-balance readout
+    const h2 = 0.12;
+    A.kappa = Math.max(0, -(qmin(A.th + h2) - 2 * qmin(A.th) + qmin(A.th - h2)) / (h2 * h2));
+    A.pull = -gs;                    // walls squeezing inward
+    A.push = P.alpha / A.sg;         // entropy pressure outward
+    A.gs = gs + A.push;
+    A.sg = clamp(A.sg + 1.2 * A.gs * dt, 0.08, 1.6);
+    const cold = A.buf.length < 25;
+    A.st = cold ? 'critic still cold'
+      : A.sg > 1.5 ? 'boiling — nearly uniform policy'
+      : Math.abs(A.gs) < 0.05 && Math.abs(f) < 0.05 ? 'settled in pressure balance'
+      : A.push > A.pull * 1.4 ? 'pressure winning — widening'
+      : 'rolling down the bowl';
+    move(A, P.eta * 2.5 * f, dt);
+  }
+
+  // ---------- colours ----------
+  let C = {};
+  function refreshColors() {
+    const cs = getComputedStyle(document.documentElement);
+    ['paper', 'surface', 'ink', 'muted', 'rule', 'dpo', 'grpo', 'sac', 'dpo-soft', 'grpo-soft', 'sac-soft', 'p-fill', 'row-hl']
+      .forEach(n => C[n] = cs.getPropertyValue('--' + n).trim());
+  }
+  refreshColors();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', refreshColors);
+  new MutationObserver(refreshColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ---------- canvas plumbing ----------
+  const cv = {};
+  function fit(name, c) {
+    const r = c.getBoundingClientRect();
+    const d = window.devicePixelRatio || 1;
+    c.width = Math.max(1, Math.round(r.width * d));
+    c.height = Math.max(1, Math.round(r.height * d));
+    const ctx = c.getContext('2d');
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+    cv[name] = { c, ctx, W: r.width, H: r.height };
+  }
+  const nodes = { d: $('cvDPO'), g: $('cvGRPO'), s: $('cvSAC'), track: $('cvTrack'), trace: $('cvTrace') };
+  const ro = new ResizeObserver(() => { for (const k in nodes) fit(k, nodes[k]); });
+  for (const k in nodes) { ro.observe(nodes[k]); fit(k, nodes[k]); }
+
+  const SANS = '"Atkinson Hyperlegible", system-ui, sans-serif';
+  const SERIF = '"Literata", Georgia, serif';
+  const alphaFor = (...keys) => (S.hl === null || keys.includes(S.hl)) ? 1 : 0.16;
+  const boost = (...keys) => (S.hl !== null && keys.includes(S.hl)) ? 1.9 : 1;
+  const lit = (...keys) => S.hl !== null && keys.includes(S.hl);
+
+  function label(ctx, text, x, y, col, o = {}) {
+    ctx.font = (o.bold ? '700 ' : '') + (o.serif ? `italic ${o.size || 14}px ${SERIF}` : `${o.size || 11.5}px ${SANS}`);
+    ctx.fillStyle = col;
+    ctx.textAlign = o.align || 'center';
+    ctx.textBaseline = o.base || 'middle';
+    ctx.fillText(text, x, y);
+  }
+  function arrow(ctx, x1, y1, x2, y2, col, w) {
+    if (Math.hypot(x2 - x1, y2 - y1) < 2.5) return;
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = w;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    const an = Math.atan2(y2 - y1, x2 - x1), hs = 6 + w * 1.4;
+    ctx.beginPath(); ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - hs * Math.cos(an - 0.42), y2 - hs * Math.sin(an - 0.42));
+    ctx.lineTo(x2 - hs * Math.cos(an + 0.42), y2 - hs * Math.sin(an + 0.42));
+    ctx.closePath(); ctx.fill();
+  }
+  function dashed(ctx, x1, y1, x2, y2, col, w, pat) {
+    ctx.save(); ctx.setLineDash(pat || [4, 4]); ctx.strokeStyle = col; ctx.lineWidth = w;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.restore();
+  }
+  function roundRect(ctx, x, y, w, h, r) {
+    const rr = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  // panel geometry: reward space on top, action axis, policy blob, then the cart
+  function geom(W, H) {
+    const pad = 16;
+    const yAx = Math.round(H * 0.54);
+    return {
+      pad, yAx,
+      ax: a => pad + ((a - LO) / (HI - LO)) * (W - 2 * pad),
+      ia: x => LO + ((x - pad) / (W - 2 * pad)) * (HI - LO),
+      ry: r => yAx - (r / (rMax * 1.12)) * (yAx - 26),
+      blobBase: yAx,
+      floor: H - 30
+    };
+  }
+
+  function drawBlob(ctx, gm, th, sg, color, keys, name) {
+    const peak = clamp(34 * (0.45 / sg), 7, 40);
+    ctx.save();
+    ctx.globalAlpha = alphaFor.apply(null, keys);
+    ctx.beginPath();
+    ctx.moveTo(gm.ax(LO), gm.blobBase);
+    for (let a = LO; a <= HI + 1e-9; a += 0.04) {
+      ctx.lineTo(gm.ax(a), gm.blobBase + peak * Math.exp(-0.5 * ((a - th) / sg) ** 2));
+    }
+    ctx.lineTo(gm.ax(HI), gm.blobBase);
+    ctx.closePath();
+    ctx.fillStyle = color + ''; ctx.globalAlpha *= 0.18; ctx.fill();
+    ctx.globalAlpha = alphaFor.apply(null, keys);
+    ctx.strokeStyle = color; ctx.lineWidth = 1.8 * boost.apply(null, keys); ctx.stroke();
+    if (name) label(ctx, name, gm.ax(th), gm.blobBase + peak + 9, color, { size: 10.5, serif: true });
+    ctx.restore();
+  }
+
+  // the cart, floor, friction and force arrow — identical in all three panels
+  function drawCart(ctx, gm, W, o, color, letter) {
+    const floor = gm.floor, cw = 30, ch = 22, cx = gm.ax(o.th);
+    ctx.save();
+    ctx.globalAlpha = 1; ctx.strokeStyle = C.rule; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, floor); ctx.lineTo(W, floor); ctx.stroke();
+
+    // friction hatching ∝ γ
+    ctx.globalAlpha = Math.min(1, 0.2 + P.g / 7) * alphaFor('tether');
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 4; x < W; x += 10) { ctx.moveTo(x, floor + 1); ctx.lineTo(x - 6, floor + 7); }
+    ctx.stroke();
+
+    // trail
+    const tr = trail[letter === 'D' ? 'd' : letter === 'G' ? 'g' : 's'];
+    if (tr.length > 1) {
+      ctx.globalAlpha = 0.3; ctx.strokeStyle = color; ctx.lineWidth = 1;
+      ctx.beginPath();
+      tr.forEach((v, i) => i ? ctx.lineTo(gm.ax(v), floor - 2) : ctx.moveTo(gm.ax(v), floor - 2));
+      ctx.stroke();
+    }
+
+    // cart
+    ctx.globalAlpha = 1;
+    roundRect(ctx, cx - cw / 2, floor - ch, cw, ch, 3);
+    ctx.fillStyle = color; ctx.fill();
+    label(ctx, letter, cx, floor - ch / 2, C.surface, { bold: true, size: 12 });
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = C.ink;
+    ctx.beginPath(); ctx.arc(cx - 7, floor + 2, 2.6, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 7, floor + 2, 2.6, 0, 7); ctx.fill();
+
+    // force arrow
+    ctx.globalAlpha = alphaFor('force');
+    const fy = floor - ch - 14;
+    const fl = clamp(o.F * 26, -W * 0.42, W * 0.42);
+    arrow(ctx, cx, fy, cx + fl, fy, color, 2.2 * boost('force'));
+    if (Math.abs(fl) > 20) label(ctx, 'F = ' + o.F.toFixed(2), cx + fl / 2, fy - 11, color, { size: 11 });
+    ctx.restore();
+    return { cx, floor, ch };
+  }
+
+  // ---------- DPO panel ----------
+  function drawDPO() {
+    const o = cv.d; if (!o) return;
+    const { ctx, W, H } = o, gm = geom(W, H);
+    ctx.clearRect(0, 0, W, H);
+
+    // faint true landscape, for orientation only
+    ctx.globalAlpha = 0.16;
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let a = LO; a <= HI; a += 0.03) {
+      const x = gm.ax(a), y = gm.ry(R(a));
+      a === LO ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    label(ctx, 'R(a) — never consulted', W - gm.pad, 34, C.muted, { align: 'right', size: 10.5 });
+
+    // beam
+    const xw = gm.ax(pins.w), xl = gm.ax(pins.l);
+    const px = (xw + xl) / 2, py = gm.yAx - 112;
+    const half = Math.max(26, Math.abs(xw - xl) / 2);
+    const dir = Math.sign(xw - xl) || 1;
+    const ang = -clamp(D.h / 5, -1, 1) * 0.3 * dir;
+    ctx.save();
+    ctx.globalAlpha = alphaFor('signal', 'force', 'baseline');
+    ctx.translate(px, py); ctx.rotate(ang);
+    ctx.strokeStyle = C.dpo; ctx.lineWidth = 3.4 * boost('force');
+    ctx.beginPath(); ctx.moveTo(-half, 0); ctx.lineTo(half, 0); ctx.stroke();
+    [-1, 1].forEach(s => {
+      ctx.fillStyle = C.dpo;
+      ctx.beginPath(); ctx.arc(s * half, 0, 4.5, 0, 7); ctx.fill();
+      ctx.strokeStyle = C.dpo; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(s * half, 0); ctx.lineTo(s * half, 11); ctx.stroke();
+      roundRect(ctx, s * half - 11, 11, 22, 5, 2); ctx.fill();
+    });
+    ctx.restore();
+    // pivot
+    ctx.globalAlpha = alphaFor('signal', 'force', 'baseline');
+    ctx.fillStyle = C.muted;
+    ctx.beginPath(); ctx.moveTo(px, py + 2); ctx.lineTo(px - 8, py + 16); ctx.lineTo(px + 8, py + 16); ctx.closePath(); ctx.fill();
+    label(ctx, 'tilt = margin h = ' + D.h.toFixed(2), px, py - half * 0.3 - 26, C.muted, { size: 11 });
+
+    // pins down to the axis
+    [['w', pins.w, '✓ y_w  preferred'], ['l', pins.l, '✗ y_l  rejected']].forEach(([k, a, txt]) => {
+      const x = gm.ax(a);
+      ctx.globalAlpha = alphaFor('signal', 'baseline');
+      dashed(ctx, x, py + 20, x, gm.yAx, C.muted, 1 * boost('signal'), [3, 4]);
+      ctx.fillStyle = k === 'w' ? C.dpo : C.muted;
+      ctx.beginPath();
+      if (k === 'w') { ctx.moveTo(x, gm.yAx - 11); ctx.lineTo(x - 6, gm.yAx - 1); ctx.lineTo(x + 6, gm.yAx - 1); }
+      else { ctx.moveTo(x, gm.yAx - 1); ctx.lineTo(x - 6, gm.yAx - 11); ctx.lineTo(x + 6, gm.yAx - 11); }
+      ctx.closePath(); ctx.fill();
+      label(ctx, txt, x, gm.yAx - 20, k === 'w' ? C.dpo : C.muted, { size: 10.5 });
+    });
+
+    // implicit reward: a straight line, slope β(θ−θref)/σ²
+    const slope = P.beta * (D.th - TREF) / (D.sg * D.sg);
+    const yMid = gm.yAx - 48, scale = 26;
+    ctx.globalAlpha = 0.9 * alphaFor('baseline', 'signal');
+    dashed(ctx, gm.ax(LO), yMid, gm.ax(HI), yMid, C.rule, 1, [2, 3]);
+    ctx.strokeStyle = C.dpo; ctx.lineWidth = 1.6 * boost('baseline');
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    for (let a = LO; a <= HI; a += 0.25) {
+      const y = clamp(yMid - slope * a * scale, gm.yAx - 86, gm.yAx - 8);
+      a === LO ? ctx.moveTo(gm.ax(a), y) : ctx.lineTo(gm.ax(a), y);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+    label(ctx, 'implicit reward β log π/π_ref — a straight line', gm.pad, yMid - 14, C.dpo, { align: 'left', size: 10.5 });
+
+    // axis + blobs
+    ctx.globalAlpha = 1; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(0, gm.yAx); ctx.lineTo(W, gm.yAx); ctx.stroke();
+    drawBlob(ctx, gm, TREF, P.sigma, C.muted, ['tether', 'signal'], Math.abs(D.th - TREF) > 0.6 ? '\u03c0_ref' : null);
+    drawBlob(ctx, gm, D.th, D.sg, C.dpo, ['width', 'force', 'signal', 'baseline'], '\u03c0_\u03b8');
+
+    // grip gauge
+    const gw = 86, gx = W - gm.pad - gw, gy = gm.yAx + 52;
+    ctx.globalAlpha = alphaFor('stall', 'force');
+    roundRect(ctx, gx, gy, gw, 7, 3); ctx.fillStyle = C.rule; ctx.fill();
+    roundRect(ctx, gx, gy, Math.max(1.5, gw * D.gate), 7, 3); ctx.fillStyle = C.dpo; ctx.fill();
+    label(ctx, 'grip 1−σ(h) = ' + D.gate.toFixed(2), gx + gw, gy - 9, C.muted, { align: 'right', size: 10.5 });
+
+    // implicit tether: an elastic cord to π_ref, no coils
+    const cart = drawCart(ctx, gm, W, D, C.dpo, 'D');
+    ctx.globalAlpha = alphaFor('tether');
+    const ax0 = gm.ax(TREF);
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2 * boost('tether');
+    ctx.setLineDash([2, 5]);
+    ctx.beginPath(); ctx.moveTo(ax0, cart.floor - 8); ctx.lineTo(cart.cx, cart.floor - 8); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = C.muted;
+    ctx.beginPath(); ctx.arc(ax0, cart.floor - 8, 3, 0, 7); ctx.fill();
+    label(ctx, 'β only — implicit', (ax0 + cart.cx) / 2, cart.floor + 16, C.muted, { size: 10 });
+  }
+
+  // ---------- GRPO panel ----------
+  function drawGRPO() {
+    const o = cv.g; if (!o) return;
+    const { ctx, W, H } = o, gm = geom(W, H);
+    ctx.clearRect(0, 0, W, H);
+    const gr = G.grp;
+
+    ctx.globalAlpha = 0.16;
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let a = LO; a <= HI; a += 0.03) {
+      const x = gm.ax(a), y = gm.ry(R(a));
+      a === LO ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    if (gr) {
+      // ±std band around the waterline
+      const yM = gm.ry(gr.mean), yHi = gm.ry(gr.mean + gr.sd), yLo = gm.ry(gr.mean - gr.sd);
+      ctx.globalAlpha = alphaFor('baseline', 'stall');
+      ctx.fillStyle = C['grpo-soft'];
+      ctx.fillRect(0, yHi, W, Math.max(1.5, yLo - yHi));
+      ctx.strokeStyle = C.grpo; ctx.lineWidth = 1.8 * boost('baseline');
+      ctx.setLineDash([7, 4]);
+      ctx.beginPath(); ctx.moveTo(0, yM); ctx.lineTo(W, yM); ctx.stroke();
+      ctx.setLineDash([]);
+      label(ctx, 'waterline: group mean ' + gr.mean.toFixed(2), gm.pad, yM - 10, C.grpo, { align: 'left', size: 10.5 });
+      label(ctx, '± σ_group ' + gr.sd.toFixed(3), W - gm.pad, yHi - 9, C.muted, { align: 'right', size: 10.5 });
+
+      // buoys
+      for (let i = 0; i < gr.xs.length; i++) {
+        const x = gm.ax(gr.xs[i]), y = gm.ry(gr.rs[i]), up = gr.adv[i] >= 0;
+        const len = clamp(Math.abs(gr.adv[i]) * 14, 3, 34);
+        ctx.globalAlpha = alphaFor('signal', 'baseline', 'force');
+        dashed(ctx, x, y, x, gm.yAx, C.rule, 1, [2, 4]);
+        arrow(ctx, x, y, x, y + (up ? -len : len), up ? C.grpo : C.muted, 1.5 * boost('signal'));
+        ctx.globalAlpha = alphaFor('signal', 'baseline', 'force');
+        ctx.beginPath(); ctx.arc(x, y, 4.4, 0, 7);
+        if (up) { ctx.fillStyle = C.grpo; ctx.fill(); }
+        else { ctx.fillStyle = C.surface; ctx.fill(); ctx.strokeStyle = C.muted; ctx.lineWidth = 1.4; ctx.stroke(); }
+        // per-sample horizontal pull on θ
+        ctx.globalAlpha = (lit('force') ? 0.9 : 0.22);
+        const pull = clamp(gr.adv[i] * (gr.xs[i] - G.th) * 16, -40, 40);
+        arrow(ctx, x, gm.yAx + 7, x + pull, gm.yAx + 7, up ? C.grpo : C.muted, 1.1 * boost('force'));
+      }
+      label(ctx, 'G = ' + gr.xs.length + ' fresh samples, thrown away each step', gm.pad, 34, C.muted, { align: 'left', size: 10.5 });
+      label(ctx, 'true R(a)', W - gm.pad, 34, C.muted, { align: 'right', size: 10.5 });
+      if (gr.sd < 0.012) {
+        ctx.globalAlpha = 1;
+        label(ctx, 'flat water → every Â = 0 → no push', W / 2, gm.yAx - 34, C.grpo, { bold: true, size: 12.5 });
+      }
+    }
+
+    ctx.globalAlpha = 1; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(0, gm.yAx); ctx.lineTo(W, gm.yAx); ctx.stroke();
+    drawBlob(ctx, gm, TREF, P.sigma, C.muted, ['tether', 'signal'], Math.abs(G.th - TREF) > 0.6 ? '\u03c0_ref' : null);
+    drawBlob(ctx, gm, G.th, G.sg, C.grpo, ['width', 'signal', 'force'], '\u03c0_\u03b8');
+
+    const cart = drawCart(ctx, gm, W, G, C.grpo, 'G');
+
+    // KL spring to the reference
+    ctx.globalAlpha = alphaFor('tether');
+    const ax0 = gm.ax(TREF), cy = cart.floor - 11;
+    ctx.fillStyle = C.rule; ctx.fillRect(ax0 - 3, cart.floor - 30, 4, 30);
+    ctx.strokeStyle = C.grpo; ctx.lineWidth = 1.8 * boost('tether');
+    const amp = 4 + 7 * Math.min(1.3, Math.sqrt(P.bkl * 12));
+    const x1 = ax0 + 1, x2 = cart.cx - 15 * Math.sign(cart.cx - ax0 || 1);
+    const L = x2 - x1, coils = 9;
+    ctx.beginPath(); ctx.moveTo(x1, cy);
+    for (let i = 0; i < coils * 2; i++) ctx.lineTo(x1 + L * (i + 0.5) / (coils * 2), cy + (i % 2 ? amp : -amp));
+    ctx.lineTo(x2, cy); ctx.stroke();
+    label(ctx, 'KL spring β_KL = ' + P.bkl.toFixed(2), (x1 + x2) / 2, cy + 20, C.muted, { size: 10 });
+
+    // clip stop blocks on the force arrow
+    ctx.globalAlpha = alphaFor('force', 'stall') * (G.clipped ? 1 : 0.4);
+    const fy = cart.floor - 36;
+    [-1, 1].forEach(s => {
+      const x = cart.cx + s * clamp(P.clip * 26, 12, W * 0.42);
+      ctx.fillStyle = G.clipped ? C.grpo : C.rule;
+      ctx.fillRect(x - 1.5, fy - 9, 3, 18);
+    });
+    if (G.clipped) label(ctx, 'clipped', cart.cx, fy + 15, C.grpo, { size: 10 });
+  }
+
+  // ---------- SAC panel ----------
+  function drawSAC() {
+    const o = cv.s; if (!o) return;
+    const { ctx, W, H } = o, gm = geom(W, H);
+    ctx.clearRect(0, 0, W, H);
+    const qmin = x => P.twin ? Math.min(qAt(A.qA, x), qAt(A.qB, x)) : 0.5 * (qAt(A.qA, x) + qAt(A.qB, x));
+
+    ctx.globalAlpha = 0.16;
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let a = LO; a <= HI; a += 0.03) {
+      const x = gm.ax(a), y = gm.ry(R(a));
+      a === LO ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    label(ctx, 'true R(a)', W - gm.pad, gm.ry(R(HI - 0.2)) - 12, C.muted, { align: 'right', size: 10.5 });
+
+    // replay buffer dots
+    ctx.globalAlpha = alphaFor('signal', 'reuse');
+    const n = A.buf.length;
+    for (let i = 0; i < n; i += Math.max(1, Math.floor(n / 220))) {
+      const e = A.buf[i];
+      ctx.globalAlpha = alphaFor('signal', 'reuse') * (0.12 + 0.5 * (i / Math.max(1, n - 1)));
+      ctx.fillStyle = C.muted;
+      ctx.beginPath(); ctx.arc(gm.ax(e.a), gm.ry(e.r), lit('reuse') ? 2.4 : 1.7, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = alphaFor('signal', 'reuse');
+    label(ctx, 'replay buffer: ' + n + ' kept samples', gm.pad, 34, C.muted, { align: 'left', size: 10.5 });
+
+    // the carved bowl
+    ctx.globalAlpha = alphaFor('signal', 'force', 'baseline');
+    ctx.beginPath();
+    ctx.moveTo(gm.ax(LO), gm.yAx);
+    for (let a = LO; a <= HI; a += 0.03) ctx.lineTo(gm.ax(a), gm.ry(qmin(a)));
+    ctx.lineTo(gm.ax(HI), gm.yAx); ctx.closePath();
+    ctx.fillStyle = C['sac-soft']; ctx.fill();
+    if (P.twin) {
+      ctx.globalAlpha = 0.3 * alphaFor('signal', 'force');
+      [A.qA, A.qB].forEach(q => {
+        ctx.strokeStyle = C.sac; ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let a = LO; a <= HI; a += 0.05) {
+          const x = gm.ax(a), y = gm.ry(qAt(q, a));
+          a === LO ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      });
+    }
+    ctx.globalAlpha = alphaFor('signal', 'force', 'baseline');
+    ctx.strokeStyle = C.sac; ctx.lineWidth = 2.1 * boost('force', 'baseline');
+    ctx.beginPath();
+    for (let a = LO; a <= HI; a += 0.03) {
+      const x = gm.ax(a), y = gm.ry(qmin(a));
+      a === LO ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    label(ctx, P.twin ? 'critic Q̂ = min of two' : 'critic Q̂ (mean of two)', W - gm.pad, 34, C.sac, { align: 'right', size: 10.5 });
+
+    // slope read at θ
+    ctx.globalAlpha = alphaFor('force');
+    const qx = gm.ax(A.th), qy = gm.ry(qmin(A.th));
+    ctx.fillStyle = C.sac;
+    ctx.beginPath(); ctx.arc(qx, qy, 4.6, 0, 7); ctx.fill();
+    // tangent to the carved bowl at θ: the slope the cart actually feels
+    const sl = (qmin(A.th + 0.3) - qmin(A.th - 0.3)) / 0.6;        // reward per action unit
+    const pxPerUnit = (W - 2 * gm.pad) / (HI - LO);
+    const pxPerReward = (gm.yAx - 26) / (rMax * 1.12);
+    const mPix = -sl * pxPerReward / pxPerUnit;                     // pixels down per pixel right
+    const dx = 36;
+    dashed(ctx, qx - dx, qy - mPix * dx, qx + dx, qy + mPix * dx, C.sac, 1.4 * boost('force'), [5, 3]);
+
+    ctx.globalAlpha = 1; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(0, gm.yAx); ctx.lineTo(W, gm.yAx); ctx.stroke();
+    drawBlob(ctx, gm, A.th, A.sg, C.sac, ['width', 'signal', 'force', 'stall'], null);
+
+    // entropy pressure pushing the width out, bowl curvature squeezing it in
+    const cxp = gm.ax(A.th), yb = gm.yAx + 48;
+    ctx.globalAlpha = alphaFor('width', 'stall', 'tether');
+    const pLen = clamp(A.push * 60, 4, 64), wLen = clamp(A.pull * 60, 0, 64);
+    arrow(ctx, cxp, yb, cxp + pLen, yb, C.sac, 1.8 * boost('width'));
+    arrow(ctx, cxp, yb, cxp - pLen, yb, C.sac, 1.8 * boost('width'));
+    arrow(ctx, cxp + pLen + 26, yb + 12, cxp + pLen + 26 - wLen, yb + 12, C.muted, 1.6 * boost('width'));
+    arrow(ctx, cxp - pLen - 26, yb + 12, cxp - pLen - 26 + wLen, yb + 12, C.muted, 1.6 * boost('width'));
+    label(ctx, 'α/σ = ' + A.push.toFixed(2) + ' out  ·  squeeze ' + Math.max(0, A.pull).toFixed(2)
+      + ' in  ·  σ = ' + A.sg.toFixed(2), gm.pad, yb + 30, C.muted, { align: 'left', size: 10.5 });
+
+    const cart = drawCart(ctx, gm, W, A, C.sac, 'S');
+
+    // no tether — show the missing anchor
+    ctx.globalAlpha = alphaFor('tether');
+    const ax0 = gm.ax(TREF);
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+    ctx.setLineDash([2, 4]);
+    ctx.beginPath(); ctx.moveTo(ax0, cart.floor - 8); ctx.lineTo(ax0 + 26, cart.floor - 8); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(ax0 + 6, cart.floor - 14); ctx.lineTo(ax0 + 20, cart.floor - 2); ctx.stroke();
+    label(ctx, 'no reference tether', ax0 + 34, cart.floor - 8, C.muted, { align: 'left', size: 10 });
+  }
+
+  // ---------- shared track ----------
+  function drawTrack() {
+    const o = cv.track; if (!o) return;
+    const { ctx, W, H } = o;
+    ctx.clearRect(0, 0, W, H);
+    const pad = 20, base = H - 68, top = 26;
+    const ax = a => pad + ((a - LO) / (HI - LO)) * (W - 2 * pad);
+    const ry = r => base - (r / (rMax * 1.1)) * (base - top);
+
+    // curve
+    ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.moveTo(ax(LO), base);
+    for (let a = LO; a <= HI; a += 0.02) ctx.lineTo(ax(a), ry(R(a)));
+    ctx.lineTo(ax(HI), base); ctx.closePath();
+    ctx.fillStyle = C['p-fill']; ctx.fill();
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let a = LO; a <= HI; a += 0.02) {
+      const x = ax(a), y = ry(R(a));
+      a === LO ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // best line
+    dashed(ctx, pad, ry(rMax), W - pad, ry(rMax), C.rule, 1.2, [6, 5]);
+    label(ctx, 'best R = ' + rMax.toFixed(2) + ' at a = ' + rBestA.toFixed(2), W - pad, ry(rMax) - 10, C.muted, { align: 'right', size: 11 });
+
+    // axis
+    ctx.strokeStyle = C.ink; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(0, base); ctx.lineTo(W, base); ctx.stroke();
+    for (let a = -3; a <= 3; a++) {
+      ctx.strokeStyle = C.rule; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(ax(a), base); ctx.lineTo(ax(a), base + 4); ctx.stroke();
+      label(ctx, String(a), ax(a), base + 12, C.muted, { size: 10.5 });
+    }
+    // reference
+    dashed(ctx, ax(TREF), top - 8, ax(TREF), base, C.muted, 1.2, [4, 4]);
+    label(ctx, 'π_ref', ax(TREF), top - 16, C.muted, { size: 11, serif: true });
+
+    // markers + width lanes
+    const items = [
+      { o: D, c: C.dpo, n: 'DPO', key: 'd' },
+      { o: G, c: C.grpo, n: 'GRPO', key: 'g' },
+      { o: A, c: C.sac, n: 'SAC', key: 's' }
+    ];
+    items.forEach((it, i) => {
+      const x = ax(it.o.th), y = ry(R(it.o.th));
+      // trail on the curve
+      const tr = trail[it.key];
+      if (tr.length > 1) {
+        ctx.globalAlpha = 0.28; ctx.strokeStyle = it.c; ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        tr.forEach((v, j) => j ? ctx.lineTo(ax(v), ry(R(v))) : ctx.moveTo(ax(v), ry(R(v))));
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      dashed(ctx, x, y, x, base, it.c, 1, [3, 3]);
+      ctx.fillStyle = it.c;
+      ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fill();
+      ctx.strokeStyle = C.surface; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.stroke();
+      // direct label, nudged apart
+      const lx = clamp(x, pad + 26, W - pad - 26);
+      label(ctx, it.n, lx, y - 15 - i * 13, it.c, { size: 11.5, bold: true });
+      // width lane
+      const ly = base + 24 + i * 13;
+      ctx.globalAlpha = alphaFor('width');
+      roundRect(ctx, ax(it.o.th - it.o.sg), ly - 3.5, ax(it.o.th + it.o.sg) - ax(it.o.th - it.o.sg), 7, 3.5);
+      ctx.fillStyle = it.c; ctx.globalAlpha = 0.3 * alphaFor('width'); ctx.fill();
+      ctx.globalAlpha = alphaFor('width');
+      ctx.fillRect(x - 1, ly - 5, 2, 10);
+      label(ctx, it.n + ' σ = ' + it.o.sg.toFixed(2), Math.min(W - pad, ax(it.o.th + it.o.sg) + 7), ly, it.c, { align: 'left', size: 9.5 });
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------- trace ----------
+  function drawTrace() {
+    const o = cv.trace; if (!o) return;
+    const { ctx, W, H } = o;
+    ctx.clearRect(0, 0, W, H);
+    const left = 34, right = W - 46, top = 18, bot = H - 24, win = 25;
+    const t1 = Math.max(win, S.t), t0 = t1 - win;
+    const tx = t => left + ((t - t0) / win) * (right - left);
+    const vy = v => bot - (v / (rMax * 1.1)) * (bot - top);
+
+    // grid + axis
+    ctx.globalAlpha = 1;
+    for (let i = 0; i <= 2; i++) {
+      const v = rMax * i / 2;
+      ctx.strokeStyle = C.rule; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(left, vy(v)); ctx.lineTo(right, vy(v)); ctx.stroke();
+      label(ctx, v.toFixed(2), left - 6, vy(v), C.muted, { align: 'right', size: 10.5 });
+    }
+    dashed(ctx, left, vy(rMax), right, vy(rMax), C.muted, 1.4, [6, 5]);
+    label(ctx, 'R(θ)', left - 6, top - 10, C.muted, { align: 'right', size: 10.5 });
+    label(ctx, 'seconds →', right, bot + 13, C.muted, { align: 'right', size: 10.5 });
+
+    const series = [
+      { k: 'd', c: C.dpo, n: 'DPO', dash: [] },
+      { k: 'g', c: C.grpo, n: 'GRPO', dash: [7, 4] },
+      { k: 's', c: C.sac, n: 'SAC', dash: [2, 3] }
+    ];
+    series.forEach(s => {
+      if (hist.length < 2) return;
+      ctx.globalAlpha = alphaFor('force', 'signal');
+      ctx.strokeStyle = s.c; ctx.lineWidth = 2; ctx.setLineDash(s.dash);
+      ctx.beginPath();
+      hist.forEach((h, i) => {
+        const x = tx(h.t), y = vy(h[s.k]);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      });
+      ctx.stroke(); ctx.setLineDash([]);
+      const last = hist[hist.length - 1];
+      ctx.fillStyle = s.c;
+      ctx.beginPath(); ctx.arc(tx(last.t), vy(last[s.k]), 3.4, 0, 7); ctx.fill();
+      label(ctx, s.n, Math.min(W - 4, tx(last.t) + 7), vy(last[s.k]), s.c, { align: 'left', size: 10.5, bold: true });
+    });
+
+    // hover crosshair
+    if (S.traceX !== null && hist.length > 1) {
+      const t = t0 + ((S.traceX - left) / (right - left)) * win;
+      let best = hist[0];
+      for (const h of hist) if (Math.abs(h.t - t) < Math.abs(best.t - t)) best = h;
+      const x = tx(best.t);
+      if (x >= left - 2 && x <= right + 2) {
+        ctx.globalAlpha = 1;
+        dashed(ctx, x, top, x, bot, C.muted, 1, [3, 3]);
+        const lines = [
+          ['t ' + best.t.toFixed(1) + 's', C.muted],
+          ['DPO ' + best.d.toFixed(3), C.dpo],
+          ['GRPO ' + best.g.toFixed(3), C.grpo],
+          ['SAC ' + best.s.toFixed(3), C.sac]
+        ];
+        const bw = 92, bh = 15 * lines.length + 8;
+        const bx = clamp(x + 10, left, right - bw), by = top + 4;
+        ctx.fillStyle = C.surface; ctx.globalAlpha = 0.96;
+        roundRect(ctx, bx, by, bw, bh, 4); ctx.fill();
+        ctx.globalAlpha = 1; ctx.strokeStyle = C.rule; ctx.lineWidth = 1; ctx.stroke();
+        lines.forEach((l, i) => label(ctx, l[0], bx + 8, by + 12 + i * 15, l[1], { align: 'left', size: 10.5 }));
+        series.forEach(s => {
+          ctx.fillStyle = s.c;
+          ctx.beginPath(); ctx.arc(x, vy(best[s.k]), 3.6, 0, 7); ctx.fill();
+        });
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------- readouts ----------
+  const fmt = v => (v < 0 ? '−' : '') + Math.abs(v).toFixed(2);
+  function readouts() {
+    const rows = [['d', D], ['g', G], ['s', A]];
+    rows.forEach(([k, o]) => {
+      $(k + 'Th').textContent = fmt(o.th);
+      $(k + 'R').textContent = R(o.th).toFixed(3);
+      $(k + 'Sg').textContent = o.sg.toFixed(2);
+      $(k + 'F').textContent = Math.abs(o.F).toFixed(2);
+      $(k + 'N').textContent = o.n.toLocaleString();
+      $(k + 'St').textContent = o.st || '—';
+    });
+    $('dN').textContent = '0 (1 pair)';
+    $('liveD').textContent = 'θ = ' + fmt(D.th) + ' · R = ' + R(D.th).toFixed(2);
+    $('liveG').textContent = 'θ = ' + fmt(G.th) + ' · R = ' + R(G.th).toFixed(2);
+    $('liveS').textContent = 'θ = ' + fmt(A.th) + ' · σ = ' + A.sg.toFixed(2) + ' · R = ' + R(A.th).toFixed(2);
+    $('oYw').textContent = pins.w.toFixed(2);
+    $('oYl').textContent = fmt(pins.l);
+  }
+
+  // ---------- main loop ----------
+  const DT = 1 / 120;
+  let lastFrame = performance.now(), carry = 0, histAcc = 0, trailAcc = 0;
+  function frame(now) {
+    const wall = Math.min(0.05, (now - lastFrame) / 1000);
+    lastFrame = now;
+    if (S.running && !S.drag) {
+      carry += wall * S.speed;
+      let guard = 0;
+      while (carry >= DT && guard++ < 60) {
+        carry -= DT;
+        stepDPO(DT); stepGRPO(DT); stepSAC(DT);
+        S.t += DT;
+        histAcc += DT; trailAcc += DT;
+        if (histAcc >= 1 / 30) {
+          histAcc = 0;
+          hist.push({ t: S.t, d: R(D.th), g: R(G.th), s: R(A.th) });
+          while (hist.length && hist[0].t < S.t - 25.4) hist.shift();
+        }
+        if (trailAcc >= 0.12) {
+          trailAcc = 0;
+          trail.d.push(D.th); trail.g.push(G.th); trail.s.push(A.th);
+          for (const k in trail) if (trail[k].length > 110) trail[k].shift();
+        }
+      }
+      if (guard >= 60) carry = 0;
+    }
+    drawDPO(); drawGRPO(); drawSAC(); drawTrack(); drawTrace();
+    readouts();
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- controls ----------
+  ['eta', 'm', 'g', 'noise', 'beta', 'G', 'bkl', 'clip', 'alpha', 'lrq'].forEach(k => {
+    el[k].addEventListener('input', () => { readParams(); });
+  });
+  el.sigma.addEventListener('input', () => {
+    readParams();
+    D.sg = P.sigma; G.sg = P.sigma;
+    if (!S.running) A.sg = P.sigma;
+  });
+  ['norm', 'twin', 'replay'].forEach(k => el[k].addEventListener('change', readParams));
+  $('play').addEventListener('click', () => { S.running = !S.running; syncPlay(); });
+  $('reset').addEventListener('click', () => resetAll(true));
+  $('speed').addEventListener('click', () => {
+    S.speed = S.speed === 1 ? 2 : S.speed === 2 ? 4 : 1;
+    $('speed').textContent = 'Speed ' + S.speed + '×';
+  });
+  $('lands').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    pickLand(b.dataset.l); resetAll(true);
+    tell('<b>' + b.textContent + ':</b> ' + ({
+      hills: 'a small broad hill on the left, a taller narrow one on the right, and a valley between them. Getting from one to the other is the whole problem.',
+      plateau: 'reward is identical almost everywhere. GRPO’s group goes flat and every advantage is zero; DPO carries on regardless, because it never looks at reward.',
+      rugged: 'many shallow optima. Watch SAC’s wide blob average them away while GRPO latches on to whichever one it sampled.'
+    })[b.dataset.l]);
+  });
+
+  function tell(html) { $('story').innerHTML = html; }
+
+  const PRESETS = {
+    wrongpin: () => {
+      pickLand('hills'); pins = { w: -2.45, l: 0.4 }; el.beta.value = 0.2; el.alpha.value = 0.08;
+      return '<b>Pin the wrong winner:</b> the preferred sample now sits in the worst place on the track. DPO walks there with perfect confidence while GRPO and SAC climb. Preference data is only as good as its pairs.';
+    },
+    flat: () => {
+      pickLand('plateau'); el.G.value = 16; el.noise.value = 0;
+      return '<b>Starve the group:</b> on a flat landscape every sampled reward matches, so σ_group → 0 and every advantage is zero — GRPO sits still no matter how large G is. DPO keeps moving: it never needed a reward. SAC inflates, because pressure is all that is left.';
+    },
+    hot: () => {
+      pickLand('hills'); el.alpha.value = 0.35; el.lrq.value = 0.3;
+      return '<b>Turn up the heat:</b> α = 0.35 inflates SAC’s blob until it is rolling on a blurred landscape rather than the real one. That blur is what carries it out of the small hill — give it 20–30 seconds, then drop α back to 0.05 and watch it collapse onto whichever peak it is nearest.';
+    },
+    cold: () => {
+      pickLand('hills'); el.alpha.value = 0.005;
+      return '<b>Freeze the heat:</b> with almost no entropy pressure the blob collapses to a spike, the critic only ever learns about one spot, and SAC parks on the first hill it found. Exploration in SAC is not a schedule bolted on — it is the α/σ term.';
+    },
+    leash: () => {
+      pickLand('hills'); el.bkl.value = 0.45; el.alpha.value = 0.08;
+      return '<b>Tighten the leash:</b> β_KL = 0.45 makes the spring back to π_ref stiff enough to beat the group advantage. GRPO now hangs near the reference however good the rewards are — the same spring as the KL explainer, just pulling harder.';
+    },
+    judge: () => {
+      pickLand('hills'); el.noise.value = 0.22; el.G.value = 4; el.alpha.value = 0.08;
+      return '<b>Noisy judge:</b> reward noise 0.22 with only G = 4. The waterline jumps around and GRPO thrashes, because the noise is now bigger than the real differences inside the group. Slide G up to 32 and the thrashing averages away — that is the whole reason group sizes are large.';
+    }
+  };
+  $('presets').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const msg = PRESETS[b.dataset.p]();
+    readParams(); resetAll(true); tell(msg);
+  });
+
+  // ---------- pointer interaction ----------
+  function attach(name, c, onDown, onMove) {
+    c.addEventListener('pointerdown', e => {
+      const r = c.getBoundingClientRect();
+      if (onDown(e.clientX - r.left, e.clientY - r.top) === false) return;
+      S.drag = name; c.setPointerCapture(e.pointerId);
+      onMove(e.clientX - r.left, e.clientY - r.top);
+    });
+    c.addEventListener('pointermove', e => {
+      if (S.drag !== name) return;
+      const r = c.getBoundingClientRect();
+      onMove(e.clientX - r.left, e.clientY - r.top);
+    });
+    const end = () => { if (S.drag === name) { S.drag = null; S.running = true; syncPlay(); } };
+    c.addEventListener('pointerup', end);
+    c.addEventListener('pointercancel', end);
+  }
+
+  // DPO panel: drag the pins above the axis, the cart below it
+  let pinGrab = null;
+  attach('dpo', nodes.d, (x, y) => {
+    const o = cv.d, gm = geom(o.W, o.H);
+    if (y < gm.yAx + 6) {
+      const dw = Math.abs(x - gm.ax(pins.w)), dl = Math.abs(x - gm.ax(pins.l));
+      pinGrab = Math.min(dw, dl) < 40 ? (dw <= dl ? 'w' : 'l') : null;
+      if (!pinGrab) return false;
+    } else pinGrab = 'cart';
+    return true;
+  }, (x) => {
+    const o = cv.d, gm = geom(o.W, o.H), a = clamp(gm.ia(x), LO, HI);
+    if (pinGrab === 'cart') { D.th = a; D.v = 0; }
+    else if (pinGrab) { pins[pinGrab] = a; }
+  });
+
+  // GRPO / SAC panels: drag the cart
+  attach('grpo', nodes.g, (x, y) => { const o = cv.g, gm = geom(o.W, o.H); return y > gm.yAx + 6; }, x => {
+    const o = cv.g, gm = geom(o.W, o.H);
+    G.th = clamp(gm.ia(x), LO, HI); G.v = 0; G.grp = null; G.acc = 9;
+  });
+  attach('sac', nodes.s, (x, y) => { const o = cv.s, gm = geom(o.W, o.H); return y > gm.yAx + 6; }, x => {
+    const o = cv.s, gm = geom(o.W, o.H);
+    A.th = clamp(gm.ia(x), LO, HI); A.v = 0;
+  });
+
+  // shared track: grab the nearest marker
+  let trackGrab = null;
+  attach('track', nodes.track, (x) => {
+    const o = cv.track, pad = 20;
+    const ax = a => pad + ((a - LO) / (HI - LO)) * (o.W - 2 * pad);
+    const cands = [['d', D], ['g', G], ['s', A]].map(([k, m]) => [k, m, Math.abs(x - ax(m.th))]);
+    cands.sort((p, q) => p[2] - q[2]);
+    if (cands[0][2] > 44) return false;
+    trackGrab = cands[0][1];
+    return true;
+  }, x => {
+    const o = cv.track, pad = 20;
+    const ia = px => LO + ((px - pad) / (o.W - 2 * pad)) * (HI - LO);
+    if (trackGrab) {
+      trackGrab.th = clamp(ia(x), LO, HI); trackGrab.v = 0;
+      if (trackGrab === G) { G.grp = null; G.acc = 9; }
+    }
+  });
+
+  // trace hover
+  nodes.trace.addEventListener('pointermove', e => {
+    const r = nodes.trace.getBoundingClientRect();
+    S.traceX = e.clientX - r.left;
+  });
+  nodes.trace.addEventListener('pointerleave', () => { S.traceX = null; });
+
+  // ---------- table highlighting ----------
+  const rows = [...document.querySelectorAll('#analogy tr')];
+  function paintRows() {
+    rows.forEach(r => {
+      r.classList.toggle('on', r.dataset.hl === S.hl);
+      r.classList.toggle('pinned', r.dataset.hl === S.pinned);
+    });
+  }
+  rows.forEach(r => {
+    const key = r.dataset.hl;
+    r.addEventListener('mouseenter', () => { S.hl = key; paintRows(); });
+    r.addEventListener('mouseleave', () => { S.hl = S.pinned; paintRows(); });
+    r.addEventListener('focus', () => { S.hl = key; paintRows(); });
+    r.addEventListener('blur', () => { S.hl = S.pinned; paintRows(); });
+    const toggle = () => { S.pinned = S.pinned === key ? null : key; S.hl = S.pinned === null ? key : S.pinned; paintRows(); };
+    r.addEventListener('click', toggle);
+    r.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
+  });
+
+  // ---------- go ----------
+  readParams(); pickLand('hills'); resetAll(true);
+  S.running = !reduceMotion; syncPlay();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

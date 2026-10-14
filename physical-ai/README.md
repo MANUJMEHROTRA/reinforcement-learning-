@@ -182,15 +182,66 @@ reparameterised gradient, learned entropy temperature, replay buffer — filling
 off-policy continuous-control gap in an on-policy RL background. Trained in the identified
 simulator, with a reward-hacking ablation and BC→RL fine-tuning.
 
-### Part IV — Reality and production
+### Part IV — Reality and production ✅ *built and verified*
 
-**9. `09_sim_to_real.ipynb`**
-Domain randomization done properly: what to randomize, how wide, and why too wide is as bad as too narrow. System identification. Inject the exact actuation latency you measured in notebook 1 and watch a policy survive or die.
+**9. [`09_domain_randomization.ipynb`](notebooks/09_domain_randomization.ipynb)**
+Planned as "how wide should the randomization be." The measurements turned it into "when
+should you randomize at all."
 
-**10. `10_lerobot_production.ipynb`**
-The production stack. `lerobot` end to end: dataset format, pretrained policies, training config, evaluation, and the path to a physical arm. The internals you built by hand in notebooks 3–8, now as the library call.
+| perturbation | worst case vs nominal |
+|---|---|
+| **delay** | **+25.4 cm** |
+| armature | +1.3 cm |
+| `kp` (13× range!) | +0.1 cm |
+| damping | +0.0 cm |
+
+**Actuator parameters barely matter** for a closed-loop position-controlled policy —
+feedback absorbs gain error. **Latency is the entire sim-to-real gap**, because the
+observation that would correct a delayed command describes a world where it hasn't landed.
+Then the uncomfortable part: **domain randomization produced a policy worse than random**
+(32.1 cm vs 23.2 cm), and my notebook-5 claim that "randomizing around a wrong centre
+doesn't help" was **refuted** — the official-centred run beat the identified-centred one.
+The failure localises to DR's two real preconditions: the randomized axis must *matter*,
+and the policy must be able to *infer* which world it's in. A single-frame policy cannot
+infer its own latency, so it can only hedge.
+
+**10. [`10_production_deployment.ipynb`](notebooks/10_production_deployment.ipynb)**
+Three artifacts other people and machines can consume:
+
+- **A LeRobot v3 dataset written from scratch** — 21/21 schema checks pass, and
+  notebook 1's lag analysis runs on it *unmodified* and recovers the 4-frame lag we
+  injected. Semantic round-trip, not just structural.
+- **A self-contained policy export** — weights, observation contract, both normalizer
+  sets, action semantics, control rate, the identified dynamics it assumes, and an
+  explicit limitations list. Verified by running its reference implementation in a fresh
+  subprocess.
+- **A 10-item deployment checklist**, every item traceable to a specific failure earlier
+  in the course. One item fails on purpose: `scene_box.xml` places its box at x = 0.5 m
+  against a 0.405 m reach.
+
+Deliberately does **not** install `lerobot` — it pins torch 2.10 against our 2.14 and
+would break notebooks 3–9. The separate-environment commands are in §5; the two
+environments exchange files, which is what a standard format is for.
 
 ---
+
+## The through-line
+
+Every notebook's useful result came from a measurement contradicting something plausible.
+
+| nb | the plausible thing | what measurement said |
+|---|---|---|
+| 1 | an action is a torque | position target, 4-frame lag, **50/50 episodes** |
+| 2 | robot data is multimodal | **not this dataset** — 0.0% of gaps exceed baseline |
+| 4 | a 30° step measures stiffness | saturates at **0.17°**, measuring the force limit |
+| 5 | the official model describes the robot | 0-frame lag vs real 4; RMSE **6.19 → 1.44** |
+| 6 | BC averaging makes the policy freeze | moves at **97% speed**, goes the wrong way |
+| 7 | chunking helps via multimodality | helps via feedback rate; offline metrics rank it **−0.25** |
+| 8 | SAC needed more samples | two bugs; **29.6 → 2.0 cm** |
+| 9 | DR buys robustness for conservatism | **worse on both axes**; latency is the only axis that matters |
+
+Eight notebooks, eight corrections, all left visible. The corrections are the
+transferable part; the specific numbers are not.
 
 ## Setup
 
